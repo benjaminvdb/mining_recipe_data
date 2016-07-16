@@ -4,14 +4,16 @@ import datetime
 import json
 import glob
 import os
-import multiprocessing
 import argparse
 import hashlib
+import random
+import math
 
 from bs4 import BeautifulSoup
 from pyparsing import Optional, Group, Word, nums, Literal
 from tqdm import tqdm
 import numpy as np
+
 
 def autoconvert(s):
     try:
@@ -61,6 +63,22 @@ def hash_dict(d):
     return hashlib.md5(dict_to_string(d)).hexdigest()
 
 
+def random_dir(root, dirsize):
+    rand1 = random.randint(0, dirsize)  # Using sqrt(number_files)
+    rand2 = random.randint(0, dirsize)
+
+    level1 = os.path.join(os.path.abspath(root), str(rand1))
+    level2 = os.path.join(level1, str(rand2))
+
+    if not os.path.exists(level1):
+        os.makedirs(level1)
+
+    if not os.path.exists(level2):
+        os.makedirs(level2)
+
+    return level2
+
+
 def parse_file(filename):
     fp = open(filename)
     soup = BeautifulSoup(fp, 'html5lib')
@@ -69,6 +87,9 @@ def parse_file(filename):
     basename = os.path.basename(filename)
     id_ = os.path.splitext(basename)[0]
     recipe = {'id': int(id_)}
+
+    name = soup.find('h1', itemprop='name').text
+    recipe['name'] = name
 
     ingredients = []
     for el in soup.find('ul', id="lst_ingredients_1")('li'):
@@ -128,17 +149,7 @@ def parse_file(filename):
     except Exception:
         pass
 
-    h = hash_dict(recipe)
-    level1 = os.path.join(os.path.abspath(args.output), str(h[:2]))
-    level2 = os.path.join(level1, str(h[2:4]))
-
-    if not os.path.exists(level1):
-        os.makedirs(level1)
-
-    if not os.path.exists(level2):
-        os.makedirs(level2)
-
-    np.savez_compressed(os.path.join(level2, str(recipe['id'])), recipe)
+    return recipe
 
 
 def split_list(l, n):
@@ -156,13 +167,6 @@ def split_list(l, n):
     return res
 
 
-def wrapper(filename):
-    try:
-        parse_file(filename)
-    except Exception:
-        print('Error parsing %s' %filename)
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process recipe files')
     parser.add_argument('input', type=str, help='input directory')
@@ -172,13 +176,14 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    recipes = []
+    # Parse all HTML files in target folder
+    filenames = glob.glob(args.input + '/*.html')
 
-    p = multiprocessing.Pool(args.pool_size)
+    # Make directories approximately equal sizes (two levels)
+    dirsize = math.sqrt(len(filenames))
 
-    filenames = glob.glob(args.input + '/*')
-    print("Got %d files." % len(filenames))
-
-    for result in tqdm(p.imap_unordered(wrapper, filenames, chunksize=args.chunk_size), total=len(filenames)):
-        pass
-#    p.map_async(parse_file, filenames)#, chunksize=args.chunk_size)
+    # Parse each AllRecipes HTML file and dump to Numpy compressed format
+    for filename in tqdm(filenames):
+        recipe = parse_file(filename)
+        directory = random_dir(args.output, dirsize)
+        np.savez_compressed(os.path.join(directory, str(recipe['id'])), recipe)
