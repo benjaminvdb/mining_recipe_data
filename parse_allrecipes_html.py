@@ -140,7 +140,7 @@ def parse_file(filename):
     if not os.path.exists(level2):
         os.makedirs(level2)
 
-    np.savez_compressed(os.path.join(level2, str(recipe['id'])), recipes)
+    np.savez_compressed(os.path.join(level2, str(recipe['id'])), recipe)
 
 
 def split_list(l, n):
