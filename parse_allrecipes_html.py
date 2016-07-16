@@ -71,8 +71,6 @@ def parse_file(filename):
     recipe = {'id': int(id_)}
 
     ingredients = []
-    # NOTE: datasets must be created collectively, which is why we are assuming
-    # an ingredient list of size 100.
     for el in soup.find('ul', id="lst_ingredients_1")('li'):
         span = el.find('span')
 

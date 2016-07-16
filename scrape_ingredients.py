@@ -1,8 +1,15 @@
 #!/usr/bin/env python
 
+"""
+Author:      Benjamin van der Burgh <benjaminvdb@gmail.com>
+Date:        July 16th 2016
+Description: Scrapes ingredients from USDA Branded Food Products Database.
+"""
+
 import re
 import urllib2
 
+import numpy as np
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
@@ -15,7 +22,7 @@ soup = BeautifulSoup(data, 'html5lib')
 l = soup.find('div', class_='list-left')
 table = l.find('tbody')
 
-regex = re.compile(r'/ndb/foods/show/([0-9]+?)\?')
+regex = re.compile(r'/ndb/foods/show/([0-9]+?)\?')  # Strips internal id
 
 ingredients = []
 rows = table.find_all('tr')
@@ -32,3 +39,5 @@ for row in tqdm(rows):
     ingredient['url_id'] = regex.match(follow_url).group(1)
 
     ingredients.append(ingredient)
+
+np.savez_compressed('ingredient_list', ingredients)
