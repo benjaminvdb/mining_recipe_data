@@ -11,7 +11,7 @@ import inflection
 from tqdm import tqdm
 
 from toolbox.strings import long_substr
-from toolbox.path import count_files
+#from toolbox.path import count_files
 
 
 def aggregate_ingredients(directory):
@@ -21,7 +21,7 @@ def aggregate_ingredients(directory):
 
     # Walk directory recursively and create, per ingredient, a list of textual
     # occurrences as it appeared on the website.
-    t = tqdm(total=count_files(directory))
+    t = tqdm()#total=count_files(directory))
     for root, dirnames, filenames in os.walk(directory):
         # Root can be relative, so convert to absolute path and join with filename
         filenames = map(lambda filename: os.path.join(os.path.abspath(root), filename), filenames)
