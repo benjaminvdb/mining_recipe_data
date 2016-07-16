@@ -1,5 +1,17 @@
 #!/usr/bin/env python
 
+"""
+Author:      Benjamin van der Burgh <benjaminvdb@gmail.com>
+Date:        July 16th 2016
+Description: This script attempts to find the base ingredient names by finding
+             ingredients with the same AllRecipe id and then finding the
+             longest common substring. The ingredients are then singularized
+             to obtain a standardized ingredient name.
+
+NOTE: the script doesn't work that well, because many ingredients only occur
+once, which prevents figuring out a base name.
+"""
+
 import os
 import itertools
 import argparse
@@ -11,7 +23,6 @@ import inflection
 from tqdm import tqdm
 
 from toolbox.strings import long_substr
-#from toolbox.path import count_files
 
 
 def aggregate_ingredients(directory):
@@ -21,10 +32,11 @@ def aggregate_ingredients(directory):
 
     # Walk directory recursively and create, per ingredient, a list of textual
     # occurrences as it appeared on the website.
-    t = tqdm()#total=count_files(directory))
+    t = tqdm()
+    directory = os.path.abspath(os.path.expanduser(directory))
     for root, dirnames, filenames in os.walk(directory):
         # Root can be relative, so convert to absolute path and join with filename
-        filenames = map(lambda filename: os.path.join(os.path.abspath(root), filename), filenames)
+        filenames = map(lambda filename: os.path.join(root, filename), filenames)
 
         # Loop over all files and create a dictionary of id -> ['list', 'of', 'occurrences']
         for filename in itertools.ifilter(os.path.isfile, filenames):
