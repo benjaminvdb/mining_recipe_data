@@ -82,7 +82,7 @@ def parse_ingredients(li):
 
 def parse_file(filename):
     fp = open(filename)
-    soup = BeautifulSoup(fp, 'html5lib', convertEntities=BeautifulSoup.HTML_ENTITIES)
+    soup = BeautifulSoup(fp, 'html5lib')
 
     # Get ID from filename
     basename = os.path.basename(filename)
