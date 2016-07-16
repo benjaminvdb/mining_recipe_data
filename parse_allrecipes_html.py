@@ -4,15 +4,17 @@ import datetime
 import json
 import glob
 import os
+import multiprocessing
 import argparse
 import hashlib
 import random
-import math
 
 from bs4 import BeautifulSoup
 from pyparsing import Optional, Group, Word, nums, Literal
 from tqdm import tqdm
 import numpy as np
+
+from toolbox.strings import pad_left
 
 
 def autoconvert(s):
@@ -63,25 +65,24 @@ def hash_dict(d):
     return hashlib.md5(dict_to_string(d)).hexdigest()
 
 
-def random_dir(root, dirsize):
-    rand1 = random.randint(0, dirsize)  # Using sqrt(number_files)
-    rand2 = random.randint(0, dirsize)
+def parse_ingredients(li):
+    ingredients = []
+    for el in li:
+        label = el.find('label', attrs={'ng-class': "{true: 'checkList__item'}[true]"})
+        if label:
+            span = label.find('span')
 
-    level1 = os.path.join(os.path.abspath(root), str(rand1))
-    level2 = os.path.join(level1, str(rand2))
+            ingredient = dict()
+            ingredient['id'] = int(span['data-id'])
+            ingredient['name'] = span.text
 
-    if not os.path.exists(level1):
-        os.makedirs(level1)
-
-    if not os.path.exists(level2):
-        os.makedirs(level2)
-
-    return level2
+            ingredients.append(ingredient)
+    return ingredients
 
 
 def parse_file(filename):
     fp = open(filename)
-    soup = BeautifulSoup(fp, 'html5lib')
+    soup = BeautifulSoup(fp, 'html5lib', convertEntities=BeautifulSoup.HTML_ENTITIES)
 
     # Get ID from filename
     basename = os.path.basename(filename)
@@ -92,14 +93,12 @@ def parse_file(filename):
     recipe['name'] = name
 
     ingredients = []
-    for el in soup.find('ul', id="lst_ingredients_1")('li'):
-        span = el.find('span')
+    li = soup.find('ul', id="lst_ingredients_1")('li')
+    ingredients = parse_ingredients(li)
 
-        ingredient = dict()
-        ingredient['id'] = int(span['data-id'])
-        ingredient['name'] = span.text
-
-        ingredients.append(ingredient)
+    li = soup.find('ul', id='lst_ingredients_2')('li')
+    ingredients2 = parse_ingredients(li)
+    ingredients.extend(ingredients2)
     recipe['ingredients'] = ingredients
 
     yield_ = soup.find('meta', itemprop='recipeYield')
@@ -149,7 +148,9 @@ def parse_file(filename):
     except Exception:
         pass
 
-    return recipe
+    directory = random_dir(args.output)
+
+    np.savez_compressed(os.path.join(directory, str(recipe['id'])), recipe)
 
 
 def split_list(l, n):
@@ -167,6 +168,35 @@ def split_list(l, n):
     return res
 
 
+def wrapper(filename):
+    try:
+        parse_file(filename)
+    except Exception as err:
+        print('Error parsing {0}: {1}'.format(filename, err))
+
+
+def random_dir(root):
+    dirsize = 469
+    strlen = len(str(dirsize))
+
+    rand1 = random.randint(0, dirsize)  # Using sqrt(number_files)
+    dir1 = pad_left(str(rand1), '0', strlen)
+
+    rand2 = random.randint(0, dirsize)
+    dir2 = pad_left(str(rand2), '0', strlen)
+
+    level1 = os.path.join(os.path.abspath(root), dir1)
+    level2 = os.path.join(level1, dir2)
+
+    if not os.path.exists(level1):
+        os.makedirs(level1)
+
+    if not os.path.exists(level2):
+        os.makedirs(level2)
+
+    return level2
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process recipe files')
     parser.add_argument('input', type=str, help='input directory')
@@ -176,14 +206,14 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    recipes = []
+
+    p = multiprocessing.Pool(args.pool_size)
+
     # Parse all HTML files in target folder
     filenames = glob.glob(args.input + '/*.html')
+    print("Got %d files." % len(filenames))
 
-    # Make directories approximately equal sizes (two levels)
-    dirsize = math.sqrt(len(filenames))
-
-    # Parse each AllRecipes HTML file and dump to Numpy compressed format
-    for filename in tqdm(filenames):
-        recipe = parse_file(filename)
-        directory = random_dir(args.output, dirsize)
-        np.savez_compressed(os.path.join(directory, str(recipe['id'])), recipe)
+    for result in tqdm(p.imap_unordered(wrapper, filenames, chunksize=args.chunk_size), total=len(filenames)):
+        pass
+#    p.map_async(parse_file, filenames)#, chunksize=args.chunk_size)
