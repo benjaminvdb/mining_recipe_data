@@ -8,8 +8,10 @@ from HTMLParser import HTMLParser
 
 import numpy as np
 import inflection
+from tqdm import tqdm
 
 from toolbox.strings import long_substr
+from toolbox.path import count_files
 
 
 def aggregate_ingredients(directory):
@@ -19,6 +21,7 @@ def aggregate_ingredients(directory):
 
     # Walk directory recursively and create, per ingredient, a list of textual
     # occurrences as it appeared on the website.
+    t = tqdm(total=count_files(directory))
     for root, dirnames, filenames in os.walk(directory):
         # Root can be relative, so convert to absolute path and join with filename
         filenames = map(lambda filename: os.path.join(os.path.abspath(root), filename), filenames)
@@ -29,6 +32,7 @@ def aggregate_ingredients(directory):
             for ingredient in data['ingredients']:
                 # NOTE: Text contains HTML escaped text, e.g. 'jalape&#241;o', so unescape this
                 ingredients[ingredient['id']].append(h.unescape(ingredient['name']))
+            t.update()
 
     return ingredients
 
