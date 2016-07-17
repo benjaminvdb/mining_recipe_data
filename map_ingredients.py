@@ -9,6 +9,7 @@ from collections import defaultdict
 from tqdm import tqdm
 from ingreedypy import Ingreedy
 from parsimonious import IncompleteParseError
+import numpy as np
 
 from ingredients import ingredient_iterator
 
@@ -101,3 +102,5 @@ if __name__ == '__main__':
 
     for pair in tqdm(p.imap_unordered(func, ingredient_iterator(args.ingredients))):
         pairs.append(pair)
+
+    np.savez_compressed(args.output, pairs)
