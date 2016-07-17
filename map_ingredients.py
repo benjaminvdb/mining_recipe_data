@@ -2,6 +2,8 @@
 
 import csv
 import argparse
+import functools
+import multiprocessing
 from collections import defaultdict
 
 from tqdm import tqdm
@@ -50,37 +52,52 @@ def victory_parser(s):
 
 
 def process(ingredient, std):
+    for s in std:
+        matches = True
+        for el in s:
+            allrecipe_ingredient = victory_parser(ingredient['name'])
+            if el not in allrecipe_ingredient:
+                matches = False
+                break
+        if matches:
+            return (ingredient['id'], ' '.join(s))
+#            mapper[ingredient['id']].append(' '.join(s))
 
 
-def wrapper(args):
+def wrapper(ingredient, std=None):
     try:
-        process(args[0], args[1])
+        return process(ingredient, std)
     except Exception as err:
-        print("Couldn't process {0}: {1}".format(args[0], err))
+        print("Couldn't process {0}: {1}".format(ingredient, err))
 
 
+def get_standardized_ingredients(filename):
+    std = None
+    with open(filename) as fp:
+        reader = csv.DictReader(fp)
+        std = [el['name'].lower().decode('Windows-1252').split(' ') for el in reader]
+    return std
 
+"""
+IMPORTANT: filter out additional information between parentheses in standardized
+ingredient list!!!
+"""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Figure out the normalized ingredients from AllRecipes')
-    parser.add_argument('input', type=str, help='input directory')
+    parser.add_argument('ingredients', type=str, help='input directory')
+    parser.add_argument('std', type=str, help='standardized ingredients')
     parser.add_argument('output', type=str, help='output file')
 
     args = parser.parse_args()
 
-    std = None
-    with open(args.input) as fp:
-        reader = csv.DictReader(fp)
-        std = [el['name'].lower().decode('Windows-1252').split(' ') for el in reader]
+    p = multiprocessing.Pool()#args.pool_size)
 
-    for ingredient in tqdm(ingredient_iterator(args.input)):
-        for s in std:
-            matches = True
-            for el in s:
-                allrecipe_ingredient = victory_parser(ingredient['name'])
-                if el not in allrecipe_ingredient:
-                    matches = False
-                    break
-            if matches:
-                mapper[ingredient['id']].append(' '.join(s))
-                break
+    std = get_standardized_ingredients(args.std)
+
+    func = functools.partial(wrapper, std=std)
+
+    pairs = []
+
+    for pair in tqdm(p.imap_unordered(func, ingredient_iterator(args.ingredients))):
+        pairs.append(pair)
