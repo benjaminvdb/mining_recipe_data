@@ -13,7 +13,7 @@ def convert_ingredients(ingredients):
     parser = ingreedypy.Ingreedy()
     parens = re.compile(r"(?:\(.*?\) |'.*?' |\d+% |\d+-inch |(([A-Z]\w+\s*)+\xae) )")
 
-    exclude = ['organic', 'medium']
+#    exclude = ['organic', 'medium']
 
     ws = re.compile(r'\s+')
     res = []
