@@ -1,5 +1,8 @@
 # Project-specific
 data/*
+*.csv
+*.pkl
+*.npz
 
 # swap
 [._]*.s[a-w][a-z]
