@@ -7,12 +7,11 @@ import re
 from collections import defaultdict
 from HTMLParser import HTMLParser
 
-from tqdm import tqdm
 from ingreedypy import Ingreedy
 from parsimonious import IncompleteParseError
 import numpy as np
 
-from ingredients import ingredient_iterator, StandardizedIngredients
+from ingredients import get_ingredients, StandardizedIngredients
 from toolbox.strings import remove_word
 from toolbox.functions import compose
 
@@ -45,7 +44,7 @@ def clean_ingredient(s):
     """
     Remove common garbage from ingredient, such as brand names and quotes info.
     """
-    return re.sub(r"(?:\(.*?\) |'.*?' |(([A-Z]\w+\s*)+\xae) )", '', s)
+    return re.sub(r"(?:\(.*?\) |'.*?' |(([0-9A-Z]\w+\s*)+\xae) )", '', s)
 
 
 def html_unescape(s):
@@ -92,13 +91,17 @@ if __name__ == '__main__':
 
     p = multiprocessing.Pool()#args.pool_size)
 
+    print("Loading standardized ingredients...")
     std = map(unicode.split, StandardizedIngredients(args.std).ingredients())
+    print("Done loading %d standardized ingredients." % len(std))
 
     func = functools.partial(wrapper, std=std)
 
-    pairs = []
+    print("Loading recipes...")
+    ingredients = get_ingredients(args.ingredients)
+    print("Done loading %d recipes." % len(ingredients))
 
-    for pair in tqdm(p.imap_unordered(func, ingredient_iterator(args.ingredients))):
-        pairs.append(pair)
+    r = p.map_async(func, ingredients)
+    r.wait()
 
-    np.savez_compressed(args.output, pairs)
+    np.savez_compressed(args.output, r.get())

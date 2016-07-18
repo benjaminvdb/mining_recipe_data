@@ -21,6 +21,17 @@ def ingredient_iterator(directory):
                 yield ingredient
 
 
+def get_ingredients(directory):
+    ingredients = []
+    directory = os.path.abspath(os.path.expanduser(directory))
+    for root, dirs, files in os.walk(directory):
+        for f in files:
+            f = os.path.join(root, f)
+            data = np.load(f)['arr_0'][()]
+            ingredients.extend(data['ingredients'])
+    return ingredients
+
+
 class StandardizedIngredients(object):
     """
     Lists the standardized ingredients of FooDB.
