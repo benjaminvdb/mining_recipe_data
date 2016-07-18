@@ -12,28 +12,9 @@ from parsimonious import IncompleteParseError
 import numpy as np
 
 from ingredients import ingredient_iterator
+from toolbox.strings import remove_word
 
 mapper = defaultdict(list)
-
-
-def remove_offending_word(s, col, sep=' '):
-    """
-    Remove the word that contains the letter at position `col` and use `sep` as
-    word separators.
-    """
-    start = col
-    stop = col
-
-    # Look behind for start of word
-    while s[start] != sep and start >= 0:
-        start = start - 1
-
-    # Look forward to end of word
-    while s[stop] != sep and stop < len(s):
-        stop = stop + 1
-
-    # Eat the fucking word and send it to hell
-    return s[:start] + s[stop:]
 
 
 def victory_parser(s):
@@ -49,7 +30,7 @@ def victory_parser(s):
             parsed = parser.parse(s)
             return parsed['ingredient']
         except IncompleteParseError as err:
-            s = remove_offending_word(s, err.column())
+            s = remove_word(s, err.column())
 
 
 def process(ingredient, std):
