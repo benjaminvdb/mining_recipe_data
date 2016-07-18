@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 
-import csv
 import argparse
 import functools
 import multiprocessing
+import re
 from collections import defaultdict
+from HTMLParser import HTMLParser
 
 from tqdm import tqdm
 from ingreedypy import Ingreedy
 from parsimonious import IncompleteParseError
 import numpy as np
 
-from ingredients import ingredient_iterator
+from ingredients import ingredient_iterator, StandardizedIngredients
 from toolbox.strings import remove_word
+from toolbox.functions import compose
 
 mapper = defaultdict(list)
 
@@ -30,40 +32,55 @@ def victory_parser(s):
             parsed = parser.parse(s)
             return parsed['ingredient']
         except IncompleteParseError as err:
-            s = remove_word(s, err.column())
+            column = err.column()
+
+            # If Ingreedy errors in a whitespace, skip back to last word before
+            # sending the column to remove_word.
+            while s[column] == ' ':
+                column = column -1
+            s = remove_word(s, column)
+
+
+def clean_ingredient(s):
+    """
+    Remove common garbage from ingredient, such as brand names and quotes info.
+    """
+    return re.sub(r"(?:\(.*?\) |'.*?' |(([A-Z]\w+\s*)+\xae) )", '', s)
+
+
+def html_unescape(s):
+    """
+    Turns escaped HTML into unicode.
+    """
+    parser = HTMLParser()
+    return parser.unescape(s)
 
 
 def process(ingredient, std):
+    # Create pipeline of cleaning steps and apply to ingredient name
+    normalize = compose(victory_parser, html_unescape, unicode.lower, clean_ingredient)
+    name = normalize(ingredient['name'])
+
     for s in std:
         matches = True
         for el in s:
-            allrecipe_ingredient = victory_parser(ingredient['name'])
-            if el not in allrecipe_ingredient:
+            if el not in name:
                 matches = False
                 break
         if matches:
             return (ingredient['id'], ' '.join(s))
-#            mapper[ingredient['id']].append(' '.join(s))
 
 
 def wrapper(ingredient, std=None):
+    """
+    Wrapper ensures that errors are ignored and the error is just printed to
+    the console, allowing the processing to continue.
+    """
     try:
         return process(ingredient, std)
     except Exception as err:
         print("Couldn't process {0}: {1}".format(ingredient, err))
 
-
-def get_standardized_ingredients(filename):
-    std = None
-    with open(filename) as fp:
-        reader = csv.DictReader(fp)
-        std = [el['name'].lower().decode('Windows-1252').split(' ') for el in reader]
-    return std
-
-"""
-IMPORTANT: filter out additional information between parentheses in standardized
-ingredient list!!!
-"""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Figure out the normalized ingredients from AllRecipes')
@@ -75,7 +92,7 @@ if __name__ == '__main__':
 
     p = multiprocessing.Pool()#args.pool_size)
 
-    std = get_standardized_ingredients(args.std)
+    std = map(unicode.split, StandardizedIngredients(args.std).ingredients())
 
     func = functools.partial(wrapper, std=std)
 
