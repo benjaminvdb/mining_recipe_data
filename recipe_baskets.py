@@ -5,20 +5,16 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 
-from toolbox.argparse.types import PathType
+from toolbox.argparse.actions import readable_dir, readable_file, writable_file
 
 from recipe import get_recipes
 
 
 if __name__ == '__main__':
-    recipe_type = PathType(exists=True, type='dir')
-    mapping_type = argparse.FileType('r')
-    basket_type = argparse.FileType('w')
-
     parser = argparse.ArgumentParser(description='Figure out the normalized ingredients from AllRecipes')
-    parser.add_argument('recipes', type=recipe_type, help='input directory with recipes')
-    parser.add_argument('mapping', type=mapping_type, help='input file holding the mapping')
-    parser.add_argument('basket', type=basket_type, help='output basket file')
+    parser.add_argument('recipes', action=readable_dir, help='input directory with recipes')
+    parser.add_argument('mapping', action=readable_file, help='input file holding the mapping')
+    parser.add_argument('basket', action=writable_file, help='output basket file')
 
     args = parser.parse_args()
 
