@@ -18,17 +18,21 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    print("Loading recipes...")
     recipes = get_recipes(args.recipes)
+    print("Finished loading %d recipes." % len(recipes))
 
     print("Loading mapper...")
     mapper = dict(filter(lambda x: x is not None, np.load(args.mapping)['arr_0'][()]))
-    print("Finished loading mapper.")
+    print("Finished loading mapper with %d keys." % len(mapper.keys()))
 
+    print("Computing recipe itemsets and saving to file...")
     with open(args.basket, 'w') as fp:
         for recipe in tqdm(recipes):
-            itemset = []
+            itemset = {}
             for ingredient in recipe['ingredients']:
                 id_ = ingredient['id']
                 if id_ in mapper:
-                    itemset.append(mapper[id_])
-            fp.write(', '.join(itemset) + '\n')
+                    itemset.add(mapper[id_])
+            fp.write(','.join(itemset) + '\n')
+    print("Finished!")
