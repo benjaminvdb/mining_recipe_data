@@ -29,7 +29,7 @@ if __name__ == '__main__':
     print("Computing recipe itemsets and saving to file...")
     with open(args.basket, 'w') as fp:
         for recipe in tqdm(recipes):
-            itemset = {}
+            itemset = set()
             for ingredient in recipe['ingredients']:
                 id_ = ingredient['id']
                 if id_ in mapper:
