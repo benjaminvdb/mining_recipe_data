@@ -95,3 +95,9 @@ allLabels <- predict(s[clustering$medoids], Recipes, method = "Jaccard")
 cluster <- split(Recipes, allLabels)
 itemFrequencyPlot(cluster[[1]], population = s, support = 0.05) # Hartig
 itemFrequencyPlot(cluster[[2]], population = s, support = 0.05) # Zoet
+
+# Supplement a recipe
+chickenRules <- subset(rules, subset = rhs %in% "chicken")
+
+# Cool result:
+# 461 {carrot,celery stalks} => {chicken} 0.01029268 0.5436782 2.993976
