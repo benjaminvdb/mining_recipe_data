@@ -1,0 +1,241 @@
+\ProvidesPackage{mystyle}
+
+\usepackage[utf8]{inputenc}                                         % Use UTF-8 encoding
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{lmodern}
+%\usepackage[bitstream-charter]{mathdesign}
+%\usepackage{libertine}
+%\usepackage[libertine]{newtxmath}
+
+\usepackage[american]{babel}										% English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm,amssymb}						% Math packages
+%\usepackage[all,warning]{onlyamsmath}                               % amsmath environments only
+\usepackage{fixmath}                                                % Make maths comply with ISO 31-0:1992 to ISO 31-13:1992
+\usepackage[pdftex]{graphicx}										% Enable pdflatex, use 'final' to always display images
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}             % Enable colored text
+\usepackage{calc}
+\usepackage[font=small,labelfont=bf]{caption}	% Custom captions under/above floats
+\usepackage{epstopdf}												% Converts .eps to .pdf
+\usepackage{booktabs}												% Nicer tables
+\usepackage{siunitx}                                                % Rounding of floats in tables
+%\sisetup{group-separator = { }}
+
+\usepackage{subcaption}                                             % Caption subfigures
+\DeclareCaptionLabelFormat{bold}{\textbf{(#2)}}
+\captionsetup{subrefformat=bold}
+
+\newcommand\hmmax{0} \newcommand\bmmax{0} \usepackage{bm}
+\usepackage{bm}                                                     % For bold math symbols
+
+\usepackage{soul}                                                   % Defines \ul for underlining
+\usepackage{mathtools}                                              % Conditionals in math mode
+\usepackage{pdfpages}                                               % Include complete PDFs
+\usepackage{alltt}                                                  % Inline verbatim text
+\usepackage{ifdraft}                                                % Conditionals for 'draft' and 'final'
+\usepackage[numbers, comma, sort&compress]{natbib}
+\usepackage{titling}                                                % Allows accessing set author, title, etc.
+\usepackage[palatino]{quotchap}                                     % Start chapters with a quote
+\newcommand*\rot{\rotatebox{90}}
+\usepackage{multirow}                                               % Multi-row table cells
+\usepackage{stackengine}                                            % Used in fancy confusion matrix
+\usepackage{enumitem}                                               % Character enumerations in enumerate
+\usepackage{ellipsis}                                               % Corrects \dots
+\usepackage{tabularx}
+
+%%% Syntax highlighting in code
+\usepackage{minted}                                                 
+\usemintedstyle{autumn}
+\definecolor{codebg}{RGB}{248,248,248}
+
+%%% Awesome plotting with TikZ
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{tikzscale}            % Nice scaling of plots
+
+\definecolor{sns1}{HTML}{4c72b0}  % Colors as defined in the 'seaborn' Python package
+\definecolor{sns2}{HTML}{55a868}
+\definecolor{sns3}{HTML}{c44e52}
+\definecolor{sns4}{HTML}{8172b2}
+\definecolor{sns5}{HTML}{ccb974}
+\definecolor{sns6}{HTML}{64b5cd}
+\pgfplotscreateplotcyclelist{seaborn}{
+    sns1!70!black, every mark/.append style={solid,fill=sns1},mark=*\\%
+    sns2!70!black, every mark/.append style={solid,fill=sns2},mark=square*\\%
+    sns3!70!black, every mark/.append style={solid,fill=sns3},mark=triangle*\\%
+    sns4!70!black, every mark/.append style={solid,fill=sns4},mark=diamond*\\%
+    sns5!70!black, every mark/.append style={solid,fill=sns5},mark=pentagon*\\%
+    sns6!70!black, every mark/.append style={solid,fill=sns6},mark=x\\%
+}
+
+\usetikzlibrary{positioning,shapes.geometric,snakes,decorations.pathreplacing,calc}
+\usepgfplotslibrary{colorbrewer}
+\pgfplotsset{
+    compat=1.12,                           % newest version, most features
+}
+
+
+%%% Scalable paired delimiters in math mode, e.g. |a|
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
+
+
+%%% Improved readability through microtyping
+\usepackage[activate={true,nocompatibility},final,tracking=true,kerning=true,spacing=true,factor=1100,stretch=10,shrink=10]{microtype}
+
+
+%%% Algorithms
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+\newcommand*\Let[2]{\State #1 $\gets$ #2}                           % Defined for convenience
+\newcommand*{\LineFor}[2]{%
+    \State\algorithmicfor\ {#1}\ \algorithmicdo\ {#2} \algorithmicend\ \algorithmicfor%
+}
+\newcommand*{\To}{\:\bm{ to }\:}
+\newcommand*{\SizeOf}[1]{\:\vert {#1} \vert\:}
+
+
+%%% Stylize complete rows in tables
+\usepackage{array}
+\newcolumntype{?}{>{\global\let\currentrowstyle\relax}}
+\newcolumntype{^}{>{\currentrowstyle}}
+\newcommand{\rowstyle}[1]{\gdef\currentrowstyle{#1}%
+  #1\ignorespaces
+}
+
+
+%%% Arrows and brackets between rows in table
+\newcommand{\tikzmark}[2][-3pt]{\tikz[remember picture, overlay, baseline=-0.5ex]\node[#1](#2){};}
+
+\tikzset{brace/.style={decorate, decoration={brace}},
+ brace mirrored/.style={decorate, decoration={brace,mirror}},
+}
+
+\newcounter{brace}
+\setcounter{brace}{0}
+\newcommand{\drawbrace}[3][brace]{%
+ \refstepcounter{brace}
+ \tikz[remember picture, overlay]\draw[#1] (#2.center)--(#3.center)node[pos=0.5, name=brace-\thebrace]{};
+}
+
+\newcounter{arrow}
+\setcounter{arrow}{0}
+\newcommand{\drawcurvedarrow}[3][]{%
+ \refstepcounter{arrow}
+ \tikz[remember picture, overlay]\draw (#2.center)edge[#1]node[coordinate,pos=0.5, name=arrow-\thearrow]{}(#3.center);
+}
+
+% #1 options, #2 position, #3 text 
+\newcommand{\annote}[3][]{%
+ \tikz[remember picture, overlay]\node[#1] at (#2) {#3};
+}
+
+
+% DroidSerif
+%\usepackage{fontspec}
+%\setromanfont[
+%    Path = fonts/,
+%    UprightFont=DroidSerif-Regular.ttf,
+%    BoldFont=DroidSerif-Bold.ttf,
+%    ItalicFont=DroidSerif-Italic.ttf,
+%    BoldItalicFont=DroidSerif-BoldItalic.ttf,
+%]{DroidSerif}
+
+
+%%% Definition environment
+\newtheoremstyle{break}% name
+  {}%         Space above, empty = `usual value'
+  {}%         Space below
+  {\normalfont}% Body font
+  {}%         Indent amount (empty = no indent, \parindent = para indent)
+  {\bfseries}% Thm head font
+  {.}%        Punctuation after thm head
+  {\newline}% Space after thm head: \newline = linebreak
+  {}%         Thm head spec
+\theoremstyle{break}
+\newtheorem{definition}{Definition}
+\newtheorem*{question*}{Research question}
+
+
+%%% Custom headers/footersi
+\usepackage{fancyhdr}
+\setlength{\headheight}{15.2pt}
+\pagestyle{fancy}
+\renewcommand{\sectionmark}[1]{\markright{#1}{}}
+\renewcommand{\chaptermark}[1]{\markboth{\chaptername\ \thechapter.\ #1}{}}
+\renewcommand{\headrulewidth}{0.5pt}                % Header underline
+\renewcommand{\footrulewidth}{0pt}                  % Remove footer underline
+
+\setlength{\skip\footins}{\headsep}
+
+
+%%% Fancy chapter headers
+\usepackage{titlesec}
+\definecolor{gray75}{gray}{0.75}
+\newcommand{\hsp}{\hspace{0pt}}
+\titleformat{\chapter}[hang]%
+    {\flushright\fontseries{b}\fontsize{80}{100}\selectfont}%
+    {\fontseries{b}\fontsize{100}{130}\selectfont \textcolor{gray75}\thechapter\hsp}{0pt}{\\ \Huge\bfseries}[]
+    
+
+%%% Lettrines as starting capitals
+\usepackage{lettrine}
+\definecolor{clettrine}{gray}{0.6}
+\newcommand{\chaplettrine}[2]{\lettrine[lines=4]{#1}{#2}}  % 1 = capital, 2 = text
+\renewcommand{\LettrineFontHook}{\color{clettrine}}
+    
+
+%%% To-do notes (must be loaded before xcolor, tikz, calc, among others!)
+\usepackage[textsize=footnotesize,obeyFinal,textwidth=3.7cm]{todonotes}
+\setlength{\marginparwidth}{3.7cm}   % Fixed problem with margins being to small
+
+
+%%% Equation and float numbering
+\numberwithin{equation}{section}					% Equationnumbering: section.eq#
+\numberwithin{figure}{section}						% Figurenumbering: section.fig#
+\numberwithin{table}{section}						% Tablenumbering: section.tab#
+
+
+% some definitions
+\def\degreeyear#1{\gdef\@degreeyear{#1}}
+\def\degreemonth#1{\gdef\@degreemonth{#1}}
+\def\degree#1{\gdef\@degree{#1}}
+\def\advisor#1{\gdef\@advisor{#1}}
+\def\department#1{\gdef\@department{#1}}
+\def\field#1{\gdef\@field{#1}}
+\def\university#1{\gdef\@university{#1}}
+\def\universitycity#1{\gdef\@universitycity{#1}}
+\def\universitystate#1{\gdef\@universitystate{#1}}
+\newcommand\gratio{0.6180339887}
+
+\newcommand{\desc}{\bm\delta}  % Description symbol (bold delta)
+\newcommand{\descx}[1]{\bm{\delta}_\mathrm{#1}}  % Named description
+\newcommand{\entity}{\bm{e}}  % Entity vector
+\newcommand{\cardin}[1]{\left\vert #1 \right\vert}  % Cardinality
+\newcommand{\stringify}[1]{\ensuremath{\text{``#1''}}}
+\newcommand{\describes}{\ensuremath{\approx_\mathrm{desc}}}
+
+\newcommand{\latex}{\LaTeX\xspace}  % LaTeX symbol has weird spacing by default
+
+%%% Add missing subscript command similar to \textsuperscript
+%\newcommand{\textsubscript}[1]{$_{\text{#1}}$}
+
+
+%%% Sensible spacing
+\frenchspacing
+
+
+%%% Create links. (NOTE: must be loaded before cleveref)
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+
+%%% Automatic reference (NOTE: must be loaded after hyperref)
+\usepackage[capitalize]{cleveref}                                   % Automatically add text to references based on the type and capitalize
