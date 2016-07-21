@@ -51,6 +51,7 @@ if __name__ == '__main__':
 
     # Get all filenames from the given path
     filenames = glob.glob(os.path.join(args.input, '*.html'))
+    num_files = len(filenames)
 
     # Set up a pool of the required size
     p = multiprocessing.Pool(args.pool_size)
@@ -60,7 +61,7 @@ if __name__ == '__main__':
 
     # Each worker process receives an unparsed review to process
     reviews = []
-    for review in tqdm(p.imap_unordered(func, filenames)):
+    for review in tqdm(p.imap_unordered(func, filenames), total=num_files):
         reviews.extend(review)
 
     with open(args.output, 'w') as fp:
