@@ -43,9 +43,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Parse reviews from HTML')
     parser.add_argument('input', action=readable_dir, help='input directory with reviews')
     parser.add_argument('output', action=writable_file, help='output TSV file')
-    parser.add_argument('--skip-missing', action='store_true', help='skip review if there are missing values')
+    parser.add_argument('--no-skip-missing', dest='skip_missing', action='store_false', help='skip review if there are missing values')
     parser.add_argument('--pool-size', default=multiprocessing.cpu_count(), help='number of processors to use')
-    parser.set_defaults(skip_missing=False)
+    parser.set_defaults(skip_missing=True)
 
     args = parser.parse_args()
 
