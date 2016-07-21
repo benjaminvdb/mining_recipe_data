@@ -5,6 +5,7 @@ import glob
 import argparse
 import multiprocessing
 import functools
+import codecs
 
 from tqdm import tqdm
 from bs4 import BeautifulSoup
@@ -17,7 +18,7 @@ def parse_file(filename, skip_missing=True):
     Parse a HTML file containing an unparsed list of reviews.
     """
     reviews = []
-    with open(filename) as fp:
+    with codecs.open(filename, encoding='utf-8') as fp:
         soup = BeautifulSoup(fp, 'html5lib')
 
         for review in soup(attrs={'itemprop': 'review'}):
@@ -64,7 +65,7 @@ if __name__ == '__main__':
     for review in tqdm(p.imap_unordered(func, filenames), total=num_files):
         reviews.extend(review)
 
-    with open(args.output, 'w') as fp:
+    with codecs.open(args.output, 'w', encoding='utf-8') as fp:
         for review in reviews:
-            fp.write('\t'.join(review))
-            fp.write('\n')
+            fp.write(u'\t'.join(review))
+            fp.write(u'\n')
