@@ -4,6 +4,7 @@ import os
 import glob
 import argparse
 import multiprocessing
+import functools
 
 from tqdm import tqdm
 from bs4 import BeautifulSoup
@@ -11,9 +12,10 @@ from bs4 import BeautifulSoup
 from toolbox.argparse.actions import readable_dir, writable_file
 
 
-reviews = []
-
 def parse_file(filename, skip_missing=True):
+    """
+    Parse a HTML file containing an unparsed list of reviews.
+    """
     reviews = []
     with open(filename) as fp:
         soup = BeautifulSoup(fp, 'html5lib')
@@ -37,13 +39,6 @@ def parse_file(filename, skip_missing=True):
     return reviews
 
 
-def save_file(filename):
-    with open(filename, 'w') as fp:
-        for review in reviews:
-            fp.write('\t'.join(review))
-            fp.write('\n')
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Parse reviews from HTML')
     parser.add_argument('input', action=readable_dir, help='input directory with reviews')
@@ -53,12 +48,21 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # Get all filenames from the given path
     filenames = glob.glob(os.path.join(args.input, '*.html'))
 
+    # Set up a pool of the required size
     p = multiprocessing.Pool(args.pool_size)
 
+    # Construct the worker function, fixing the skip_missing argument
+    func = functools.partial(parse_file, skip_missing=args.skip_missing)
+
+    # Each worker process receives an unparsed review to process
     reviews = []
-    for review in tqdm(p.imap_unordered(parse_file, filenames)):
+    for review in tqdm(p.imap_unordered(func, filenames)):
         reviews.extend(review)
 
-    save_file(args.output)
+    with open(args.output, 'w') as fp:
+        for review in reviews:
+            fp.write('\t'.join(review))
+            fp.write('\n')
