@@ -13,6 +13,7 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 
 from toolbox.argparse.actions import readable_dir, writable_file
+from toolbox.io import UnicodeWriter
 
 
 def parse_file(filename, skip_missing=None, remove=None):
@@ -67,6 +68,7 @@ if __name__ == '__main__':
     # Each worker process receives an unparsed review to process
     reviews = []
     name_to_userid = {}
+    print('Parsing HTML files...')
     for res_reviews in tqdm(p.imap_unordered(func, filenames), total=len(filenames)):
 
         # Replace name with user_id
@@ -74,18 +76,22 @@ if __name__ == '__main__':
             if author in name_to_userid:  # Known author, map to userid
                 author = name_to_userid[author]
             else:  # Unknown author, assign a userid
-                userid = str(len(name_to_userid))
+                userid = len(name_to_userid)
                 name_to_userid[author] = userid
                 author = userid
             reviews.append((id_, author, rating, date))
+    print('Finished parsing files.')
 
-    # Save reviews
-    with codecs.open(args.output, 'w', encoding='utf-8') as fp:
-        for review in reviews:
-            fp.write(args.delimiter.join(review))
-            fp.write(u'\n')
+    print('Saving %d reviews to file...' % len(reviews))
+    with codecs.open(args.output, 'w') as fp:
+        writer = UnicodeWriter(fp, encoding='utf-8')
+        writer.writerows(reviews)
+    print('Finished saving reviews.')
 
-    # Save map
     userid_to_name = {userid: name for name, userid in name_to_userid.items()}  # Invert map
-    with codecs.open(args.map, 'w', encoding='utf-8') as fp:
+    print('Saving %d id -> username mapping to file...' % len(userid_to_name))
+    with codecs.open(args.map, 'w') as fp:
         json.dump(userid_to_name, fp, ensure_ascii=False, indent=2)
+    print('Finished saving user mappings.')
+
+    print('Finished!')
