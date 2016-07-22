@@ -9,7 +9,6 @@ import codecs
 import json
 from HTMLParser import HTMLParser
 
-import pandas as pd
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
@@ -51,14 +50,13 @@ if __name__ == '__main__':
     parser.add_argument('map', action=writable_file, help='output file for mapping in JSON')
     parser.add_argument('--no-skip-missing', dest='skip_missing', action='store_false', help='skip review if there are missing values')
     parser.add_argument('--pool-size', '-p', type=int, default=multiprocessing.cpu_count(), help='number of processors to use')
-    parser.add_argument('--delimiter', '-d', type=str, default=',', help='the separator to use in the output file')
+    parser.add_argument('--delimiter', '-d', type=unicode, default=',', help='the separator to use in the output file')
     parser.set_defaults(skip_missing=True)
 
     args = parser.parse_args()
 
     # Get all filenames from the given path
     filenames = glob.glob(os.path.join(args.input, '*.html'))
-    num_files = len(filenames)
 
     # Set up a pool of the required size
     p = multiprocessing.Pool(args.pool_size)
@@ -68,25 +66,26 @@ if __name__ == '__main__':
 
     # Each worker process receives an unparsed review to process
     reviews = []
-    for review in tqdm(p.imap_unordered(func, filenames), total=num_files):
-        reviews.extend(review)
+    name_to_userid = {}
+    for res_reviews in tqdm(p.imap_unordered(func, filenames), total=len(filenames)):
 
-    df = pd.DataFrame(reviews, columns=['id', 'user', 'rating', 'date'])
-    df.set_index('id', inplace=True)
-
-    # Create a hashmap for user
-    usernames = df['user'].unique()
-    num_users = len(usernames)
-    ids = range(num_users)
-    name_to_id = dict(zip(ids, usernames))
-    id_to_name = dict(zip(usernames, ids))
-
-    # Replace usernames
-    df.replace({'user': id_to_name}, inplace=True)
+        # Replace name with user_id
+        for id_, author, rating, date in res_reviews:
+            if author in name_to_userid:  # Known author, map to userid
+                author = name_to_userid[author]
+            else:  # Unknown author, assign a userid
+                userid = str(len(name_to_userid))
+                name_to_userid[author] = userid
+                author = userid
+            reviews.append((id_, author, rating, date))
 
     # Save reviews
-    df.to_csv(args.output, encoding='utf-8', sep=args.delimiter)
+    with codecs.open(args.output, 'w', encoding='utf-8') as fp:
+        for review in reviews:
+            fp.write(args.delimiter.join(review))
+            fp.write(u'\n')
 
-    # Save the id -> username mapping
+    # Save map
+    userid_to_name = {userid: name for name, userid in name_to_userid.items()}  # Invert map
     with codecs.open(args.map, 'w', encoding='utf-8') as fp:
-        json.dump(id_to_name, fp, ensure_ascii=False, indent=2)
+        json.dump(userid_to_name, fp, ensure_ascii=False, indent=2)
