@@ -76,7 +76,7 @@ if __name__ == '__main__':
             if author in name_to_userid:  # Known author, map to userid
                 author = name_to_userid[author]
             else:  # Unknown author, assign a userid
-                userid = len(name_to_userid)
+                userid = str(len(name_to_userid))
                 name_to_userid[author] = userid
                 author = userid
             reviews.append((id_, author, rating, date))
@@ -84,7 +84,7 @@ if __name__ == '__main__':
 
     print('Saving %d reviews to file...' % len(reviews))
     with codecs.open(args.output, 'w') as fp:
-        writer = UnicodeWriter(fp, encoding='utf-8')
+        writer = UnicodeWriter(fp, encoding='utf-8', delimiter=args.delimiter)
         writer.writerows(reviews)
     print('Finished saving reviews.')
 
