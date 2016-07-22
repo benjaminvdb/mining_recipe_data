@@ -51,7 +51,7 @@ if __name__ == '__main__':
     parser.add_argument('map', action=writable_file, help='output file for mapping in JSON')
     parser.add_argument('--no-skip-missing', dest='skip_missing', action='store_false', help='skip review if there are missing values')
     parser.add_argument('--pool-size', '-p', type=int, default=multiprocessing.cpu_count(), help='number of processors to use')
-    parser.add_argument('--delimiter', '-d', type=unicode, default=',', help='the separator to use in the output file')
+    parser.add_argument('--delimiter', '-d', type=str, default=',', help='the separator to use in the output file')
     parser.set_defaults(skip_missing=True)
 
     args = parser.parse_args()
