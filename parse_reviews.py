@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     userid_to_name = {userid: name for name, userid in name_to_userid.items()}  # Invert map
     print('Saving %d id -> username mapping to file...' % len(userid_to_name))
-    with codecs.open(args.map, 'w') as fp:
+    with codecs.open(args.map, 'w', encoding='utf-8') as fp:
         json.dump(userid_to_name, fp, ensure_ascii=False, indent=2)
     print('Finished saving user mappings.')
 
