@@ -60,14 +60,9 @@ It includes a quantity in cups, a brandname, a production paradigm, taste depict
 For the purpose of this research, we are interested only in `corn`, which we will call a \emph{standardized ingredient}.
 These are obtained by removing the quantity and brandname and matching the resulting string to a list of standardized ingredients in the FooDB dataset (described below).
 
-Downloading the HTML pages and parsing them resulted in a dataset of $\num{91910}$ recipes.
-\cref{tab:recipe_attributes} provides an overview of the recipe attributes that were obtained from Allrecipes.
-The recipe pages provide some, but not all, of the reviews for that specific recipe, so these were downloaded and parsed separately.
-
-
 \begin{table}
-	\label{tab:recipe_attributes}
 	\caption{An overview of recipe attributes.}
+	\label{tab:recipe_attributes}
 	
 	\centering
 	\begin{tabular}{l l}
@@ -80,9 +75,47 @@ The recipe pages provide some, but not all, of the reviews for that specific rec
  		ingredients & a list of standardized ingredients \\
  		name & name of the recipe \\
  		nutrients & nutritional information, e.g. salt and sugar quantities \\
- 		preparation\_time & preparation time (cutting, washing, etc.) \\
+ 		preparation\_time & preparation time (for cutting, washing, etc.) \\
  		total\_time & sum of preparation and cooking time \\
  		yields & number of portions for the given ingredient quantities \\
  	\bottomrule
 	\end{tabular}
 \end{table}
+
+\begin{table}
+	\caption{Summary of the datasets}
+	\label{tab:dataset_summary}
+	
+	\centering
+	\begin{tabular}{l r}
+		\toprule
+		\textbf{Description} & \textbf{\#} \\
+		\midrule
+		Recipes & $\num{91910}$ \\
+		Recipes with at least one rating & $\num{66846}$ \\
+		Standardized ingredients also in FooDB & $\num{406}$ \\
+		Users & $\num{745228}$ \\
+		Ratings & $\num{3253234}$ \\ 
+		Density of ingredient matrix $Y$ & $\num{1.95e-2}$ \\
+		Density of rating matrix $R$ & $\num{6.53e-5}$ \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+
+\cref{tab:recipe_attributes} provides an overview of all the recipe attributes that were obtained from Allrecipes, most of which are not in the focus of this research.
+\cref{tab:dataset_summary} provides a summary of the datasets.
+We will be mostly concerned with the ingredient data, which can be represented as a sparse binary matrix $Y$ ($n \times m$):
+
+\begin{equation*}
+	\tag{Ingredient matrix}
+	Y_{ri}=
+	\begin{cases}
+	    1,& \text{if recipe } r \text{ contains ingredient } i \\
+	    0,& \text{otherwise}
+	\end{cases}
+\end{equation*}
+
+The recipe pages provide some, but not all, of the reviews for that specific recipe, so these were downloaded and parsed separately.
+This dataset consists of $U \times M \times S$ tuples, with $U$ the set of users of size $p$, $M$ the set of meals (or recipes) of size $q$, and scores $S=\left\{1, 2, \dots, 5\right\}$.
+These tuples can be conveniently represented into a sparse matrix $R$ $(p \times q)$ of ratings.

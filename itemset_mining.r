@@ -101,3 +101,31 @@ chickenRules <- subset(rules, subset = rhs %in% "chicken")
 
 # Cool result:
 # 461 {carrot,celery stalks} => {chicken} 0.01029268 0.5436782 2.993976
+
+require(ggplot2)
+require(RColorBrewer)
+require(plyr)
+
+
+# Plot ingredient distribution
+y <- sort(itemFrequency(Recipes, type = 'abs'), decreasing = TRUE)
+n <- length(y)
+x <- 1:n
+
+# Data
+data <- data.frame(x=x, y=y, group='Data')
+
+# Fit linear line on logarithmic data
+fit <- lm(log(y) ~ x, data=data.frame(x=x, y=y))
+fitvals <- exp(fit$fitted.values)
+data2 <- data.frame(x=x, y=fitvals, group='Regression')
+
+# Plot
+ggplot() + aes(x=x, y=y, color=group) +
+  geom_point(data=data, size=.5) +
+  geom_line(data=data2, linetype='dashed', size=.8) +
+  scale_y_log10() +
+  scale_color_brewer(palette = 'Set1') +
+  ggtitle('Ingredient frequencies on a logarithmic scale') +
+  labs(x='Ingredients', y='Frequency') +
+  theme(legend.title = element_blank())
