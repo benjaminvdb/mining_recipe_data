@@ -2,7 +2,7 @@
 \label{sec:introduction}
 
 In many ways, the kitchen can be seen as the world's oldest laboratory.
-People have experimented with a large number of ingredients, their complex interplay and preparation methods ever since we start using tools.
+People have experimented with a large number of ingredients, their complex interplay and preparation methods ever since we started using tools.
 With the advent of Web 2.0 and its focus on user-generated content and social media, a lot of data about cooking is now available.
 On websites such as Allrecipes and Food Network, users can submit their own recipes and rate recipes of other users.
 Instead of browsing through cookbooks, food lovers can now discover new recipes by limiting themselves to a specific category, such as `Christmas' or `Quick \& Easy', or by following other users on the platform.
@@ -12,7 +12,77 @@ Traditionally, clustering and classification methods have been used to identify 
 It is often assumed that if a recipe can be found with a certain pairing of ingredients, this pairing must be generally favorable.
 Using the user ratings available, however, it becomes possible to find more specific patterns for certain users groups.
 For example, the Food Pairing theory states that ingredients with overlapping flavor compounds are often used in Western cuisine.
-It is often thought that this theory does not hold for Eastern cuisine, which might indicate a strong cultural bias towards certain combinations of ingredients in relation to the combination of flavor compounds.
-Now that a large volume of recipes and user reviews is available, we can start to find out what ingredients make a good combination in much finer detail.
+On the other hand, it is often thought that this theory does not hold for Eastern cuisine, which might indicate a strong cultural bias towards certain combinations of ingredients in relation to the combination of flavor compounds.
+Now that a large volume of recipes and user reviews is available, we can start to find out which ingredients make a good combination in much finer detail.
 
-In this research, several aspects of recipes and ingredient pairing are studied using a 
+Since users rate only a very small fraction of all recipes in the database, it is non-trivial to determine whether a user likes a recipe that was not rated by this user.
+Several well-known \emph{Collaborative Filtering} (CF) methods are used to obtain an estimate of these unrated recipes.
+The resulting dense matrix of recipe ratings can also be seen as rating for ingredient or flavor component itemsets.
+Therefore, these itemsets can be mined for user-specific patterns that aid the recommendation of ingredients.
+
+In this research, several aspects of recipes and ingredient pairing are studied using a dataset that was derived from the Allrecipes recipe sharing platform.
+This dataset was joined with FooDB, a dataset that includes information on the flavor components of ingredients.
+The resulting dataset is explored from various perspectives, involving ingredient lists, flavor compounds and user ratings, in order to both validate the date and get a better understanding.
+After that, CF techniques are investigated that are used to get a broader knowledge on user preferences in relation to ingredients and flavor components. 
+This gives us the possibility to test the Foodpairing hypothesis, that states that ingredients with overlapping sets of flavor components that make a good combination, and mine for other patterns as well.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Dataset}
+\label{sec:dataset}
+
+For the purpose of this research, several new datasets were constructed.
+While there exist a few recipe datasets, none of them include both the required ingredients, corresponding flavor components and user ratings.
+The recipes and user ratings were scraped from the food focussed social networking service Allrecipes.
+The resulting dataset was joined with FooDB, a comprehensive dataset on food constituents, chemistry and biology.
+In this paper we focus on the flavor component data in FooDB, which  describes for a large number of ingredients its constituent flavors.
+This section describes how the dataset was obtained, which choices were made, and gives a high-level overview of its contents.
+
+
+\subsection{Allrecipes}
+\label{subsec:allrecipes}
+
+Allrecipes is a social networking service that is focussed on recipes for meals.
+Visitors of the website can browse through the collection of recipes that were submitted by its members.
+Recipes are categorized by the type of course, by season, special occasions (e.g. `Christmas`) among others.
+Anyone can sign up for a membership, which gives access to some additional functionality and enables members to submit their own recipes and rate other recipes.
+
+Resources on the website, such as recipes, reviews and users, are given a unique identifier in a sequence, which makes it trivial to download the HTML page for each resource.
+Furthermore, the pages follow some of schemas for structured data markup of Schema.org.
+The recipe pages, for example, follow the \texttt{Recipe} schema including properties such as \texttt{totalTime} (total cooking time), \texttt{aggregateRating} (average rating of the recipe) and \texttt{author} (submitter of the recipe).
+The preparation procedure itself was omitted, since it is not of interest for this study.
+The only attribute that required some additional processing were the ingredients themselves.
+There seems to be no standardized way in which these ingredients are provided, although they have some structure.
+Consider for example: ``2 cups Cascadian Farm® organic frozen sweet corn, thawed''.
+It includes a quantity in cups, a brandname, a production paradigm, taste depiction and state.
+For the purpose of this research, we are interested only in `corn`, which we will call a \emph{standardized ingredient}.
+These are obtained by removing the quantity and brandname and matching the resulting string to a list of standardized ingredients in the FooDB dataset (described below).
+
+Downloading the HTML pages and parsing them resulted in a dataset of $\num{91910}$ recipes.
+\cref{tab:recipe_attributes} provides an overview of the recipe attributes that were obtained from Allrecipes.
+The recipe pages provide some, but not all, of the reviews for that specific recipe, so these were downloaded and parsed separately.
+
+
+\begin{table}
+	\label{tab:recipe_attributes}
+	\caption{An overview of recipe attributes.}
+	
+	\centering
+	\begin{tabular}{l l}
+		\toprule
+		\textbf{Attribute} & \textbf{Description} \\
+		\midrule
+		calories & nutritional energy in kilocalories \\
+ 		cooking\_time & cooking time in seconds \\
+ 		id & Allrecipe recipe identifier \\
+ 		ingredients & a list of standardized ingredients \\
+ 		name & name of the recipe \\
+ 		nutrients & nutritional information, e.g. salt and sugar quantities \\
+ 		preparation\_time & preparation time (cutting, washing, etc.) \\
+ 		total\_time & sum of preparation and cooking time \\
+ 		yields & number of portions for the given ingredient quantities \\
+ 	\bottomrule
+	\end{tabular}
+\end{table}
