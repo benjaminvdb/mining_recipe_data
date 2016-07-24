@@ -1,0 +1,24 @@
+\pgfplotstabletypeset[%
+    every head row/.style={before row=\toprule, 
+    after row=\midrule},
+    every last row/.style={after row=\bottomrule},
+    col sep=semicolon,
+    header=true,
+%    font=\small,
+    columns/Ingredient/.style={
+        column type=l,
+        string type
+    },
+    columns/Frequency/.style={
+        column type=l,
+%        fixed,
+%        fixed zerofill,
+%        precision=2
+    },
+    columns/Relative/.style={
+        column type=l,
+%        fixed,
+        fixed zerofill,
+        precision=2
+    }
+]{tables/ingredients_top10.dat}

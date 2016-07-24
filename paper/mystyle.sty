@@ -21,6 +21,8 @@
 \usepackage{siunitx}                                                % Rounding of floats in tables
 %\sisetup{group-separator = { }}
 
+\renewcommand{\floatpagefraction}{.8}
+
 \usepackage{subcaption}                                             % Caption subfigures
 \DeclareCaptionLabelFormat{bold}{\textbf{(#2)}}
 \captionsetup{subrefformat=bold}
@@ -50,6 +52,11 @@
 %%% Awesome plotting with TikZ
 \usepackage{tikz}
 \usepackage{pgfplots}
+\usepgfplotslibrary{external}
+\usetikzlibrary{pgfplots.external}
+\tikzexternalize[prefix=_tikz/]
+\tikzexternalize[shell escape=-enable-write18]
+
 \usepackage{pgfplotstable}
 \usepackage{tikzscale}            % Nice scaling of plots
 

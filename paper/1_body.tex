@@ -41,6 +41,27 @@ In this paper we focus on the flavor component data in FooDB, which  describes f
 This section describes how the dataset was obtained, which choices were made, and gives a high-level overview of its contents.
 
 
+\subsection{FooDB}
+\label{subsec:foodb}
+
+FooDB is a freely available resource on food constituent, chemistry and biology.
+The table that makes it interesting for this research is a list of chemicals that give foods their flavor, color, taste, texture and aroma.
+Another convenient feature is that foods in FooDB are named in quite general terms.
+For example, instead of having specific descriptions of various types of milk, such as \emph{low far}, \emph{skimmed milk} and \emph{whole milk}, these are referred to simply as milk.
+These different types of milk taste differently because the ratio of chemical components is different, but the components themselves are mostly the same.
+These names can therefore be used as a equivalence group to which to which we will map more specific ingredient names (see \cref{subsec:allrecipes}).
+The following tables are used:
+
+\begin{description}
+	\item [Foods ($893$ items)] metadata concerning certain foods, such as a general and scientific name and a food group (e.g. `Herbs and Spices').
+	\item [Flavors ($856$ items)] categorizes flavors (e.g. `odor`), and groups them (e.g. `vegetable').
+	\item [Chemical compounds ($\num{27593}$ items)] the core of the dataset, describing each compound using $100$ attributes, such as chemical formula and references to literature.
+\end{description}
+
+Separate mappings are available that provide a many-to-many mapping between compounds and the other tables.
+Mapping ingredients from recipes to FooDB therefore provides us with detailed information about both the chemicals and the human sensory perception of these chemicals.
+
+
 \subsection{Allrecipes}
 \label{subsec:allrecipes}
 
@@ -48,6 +69,12 @@ Allrecipes is a social networking service that is focussed on recipes for meals.
 Visitors of the website can browse through the collection of recipes that were submitted by its members.
 Recipes are categorized by the type of course, by season, special occasions (e.g. `Christmas`) among others.
 Anyone can sign up for a membership, which gives access to some additional functionality and enables members to submit their own recipes and rate other recipes.
+Two datasets were generated from the information available at Allrecipes: a dataset consisting of ingredients used in recipes and a dataset of user ratings of recipes.
+This section describes how these two datasets were obtained and provides a preliminary analysis of their contents.
+
+
+\subsubsection{Ingredient sets}
+\label{subsubsec:ingredient_sets}
 
 Resources on the website, such as recipes, reviews and users, are given a unique identifier in a sequence, which makes it trivial to download the HTML page for each resource.
 Furthermore, the pages follow some of schemas for structured data markup of Schema.org.
@@ -57,10 +84,10 @@ The only attribute that required some additional processing were the ingredients
 There seems to be no standardized way in which these ingredients are provided, although they have some structure.
 Consider for example: ``2 cups Cascadian Farm® organic frozen sweet corn, thawed''.
 It includes a quantity in cups, a brandname, a production paradigm, taste depiction and state.
-For the purpose of this research, we are interested only in `corn`, which we will call a \emph{standardized ingredient}.
-These are obtained by removing the quantity and brandname and matching the resulting string to a list of standardized ingredients in the FooDB dataset (described below).
+For the purpose of this research, we are interested only in `corn', which we will call a \emph{standardized ingredient}.
+These are obtained by removing the quantity and brandname, using a manually created grammar, and matching the resulting string to a list of standardized ingredients in the FooDB dataset (described below).
 
-\begin{table}
+\begin{table}[htbp]
 	\caption{An overview of recipe attributes.}
 	\label{tab:recipe_attributes}
 	
@@ -82,7 +109,7 @@ These are obtained by removing the quantity and brandname and matching the resul
 	\end{tabular}
 \end{table}
 
-\begin{table}
+\begin{table}[htbp]
 	\caption{Summary of the datasets}
 	\label{tab:dataset_summary}
 	
@@ -103,7 +130,7 @@ These are obtained by removing the quantity and brandname and matching the resul
 \end{table}
 
 
-\cref{tab:recipe_attributes} provides an overview of all the recipe attributes that were obtained from Allrecipes, most of which are not in the focus of this research.
+\cref{tab:recipe_attributes} provides an overview of all the recipe attributes that were obtained from Allrecipes, most of which are not the focus of this research.
 \cref{tab:dataset_summary} provides a summary of the datasets.
 We will be mostly concerned with the ingredient data, which can be represented as a sparse binary matrix $Y$ ($n \times m$):
 
@@ -116,6 +143,26 @@ We will be mostly concerned with the ingredient data, which can be represented a
 	\end{cases}
 \end{equation*}
 
+\cref{tab:ingredients_top10} provides an overview of the top $10$ most frequent ingredients, confirming what most people would assume.
+\cref{fig:ingredient_frequencies} plots the frequencies of all ingredients on a logarithmic scale, providing a global perspective.
+It shows that the ingredient frequencies follow a log-linear model, which can lead to problems when mining for patterns, since the available data for many ingredients is very limited.
+
+\begin{table}[htbp]
+	\caption{Top 10 of most frequent ingredients}
+	\label{tab:ingredients_top10}
+	
+	\centering
+	\input{tables/ingredients_top10}	
+\end{table}
+
+\begin{figure}[htbp]
+	\centering
+	\input{plots/ingredient_frequencies.tex}
+	\caption{Ingredient frequencies (red) follow the log-linear model (blue).}
+	\label{fig:ingredient_frequencies}
+\end{figure}
+
 The recipe pages provide some, but not all, of the reviews for that specific recipe, so these were downloaded and parsed separately.
-This dataset consists of $U \times M \times S$ tuples, with $U$ the set of users of size $p$, $M$ the set of meals (or recipes) of size $q$, and scores $S=\left\{1, 2, \dots, 5\right\}$.
+This dataset consists of $U \times M \times S$ tuples, where $U$ is the set of users of size $p$, $M$ the set of meals (or recipes) of size $q$, and scores $S=\left\{1, 2, \dots, 5\right\}$.
 These tuples can be conveniently represented into a sparse matrix $R$ $(p \times q)$ of ratings.
+

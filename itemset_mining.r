@@ -121,6 +121,13 @@ fitvals <- exp(fit$fitted.values)
 data2 <- data.frame(x=x, y=fitvals, group='Regression')
 
 # Plot
+library(tikzDevice)
+plots_dir = '/Users/benny/Repositories/recipes/paper/plots'
+phi <- 1.618
+width <- 4.9823
+height <- width/phi
+filename <- file.path(plots_dir, 'ingredient_frequencies.tex')
+tikz(file = filename, width = width, height = height)
 ggplot() + aes(x=x, y=y, color=group) +
   geom_point(data=data, size=.5) +
   geom_line(data=data2, linetype='dashed', size=.8) +
@@ -128,4 +135,25 @@ ggplot() + aes(x=x, y=y, color=group) +
   scale_color_brewer(palette = 'Set1') +
   ggtitle('Ingredient frequencies on a logarithmic scale') +
   labs(x='Ingredients', y='Frequency') +
-  theme(legend.title = element_blank())
+  theme(plot.title = element_text(size=12),
+        legend.title = element_blank(),
+        legend.justification=c(1,1),
+        legend.position=c(1,1))
+dev.off()
+
+# Save table
+mod_stargazer <- function(output.file, ...) {
+  output <- capture.output(stargazer(...))
+  cat(paste(output, collapse = "\n"), file=output.file, sep="\n", append=FALSE)
+}
+
+tables_dir <- '/Users/benny/Repositories/recipes/paper/tables'
+top <- sort(itemFrequency(Recipes, type='abs'), decreasing = TRUE)
+topN <- top[1:10]
+t <- data.frame(Ingredient=names(topN), Frequency=unname(topN), Relative=unname(topN)/sum(top))
+filename <- file.path(tables_dir, 'ingredients_top10.tex')
+mod_stargazer(filename, t, summary=FALSE, digit.separator=' ')
+
+filename <- filename <- file.path(tables_dir, 'ingredients_top10.dat')
+write.table(t, file = filename, quote = FALSE, sep = ";",
+            row.names = FALSE, col.names = TRUE)
