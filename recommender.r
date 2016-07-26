@@ -83,8 +83,42 @@ tuples <- tuples[
   ]
 Recipes <- as(tuples, 'realRatingMatrix')
 
-hist(getRatings(normalize(r)), breaks=100)
-hist(getRatings(normalize(r, method="Z-score")), breaks=100)
+require(ggplot2)
+require(RColorBrewer)
+require(tikzDevice)
+require(scales)
+
+plots_dir = '/Users/benny/Repositories/recipes/paper/plots'
+phi <- 1.618
+width <- 4.9823
+height <- width/phi
+filename <- file.path(plots_dir, 'user_ratings.tex')
+tikz(file = filename, width = width, height = height)
+qplot(getRatings(Recipes), binwidth=0.5) + #, fill=I('#E41A1C'))
+  ggtitle('Frequency of reviews with a certain rating') +
+  labs(x='Stars', y='Frequency') +
+  scale_y_continuous(labels = comma) +
+  theme(plot.title = element_text(size=12))
+dev.off()
+
+df <- data.frame(x=getRatings(Recipes), stars=I)
+
+hist(getRatings(Recipes))
+
+plots_dir = '/Users/benny/Repositories/recipes/paper/plots'
+phi <- 1.618
+width <- 4.9823
+height <- width/phi
+filename <- file.path(plots_dir, 'normalized_ratings.tex')
+tikz(file = filename, width = width, height = height)
+hist(getRatings(normalize(Recipes)), breaks=50)
+  #ggtitle('Frequency of reviews with a certain rating') +
+  #labs(x='Stars', y='Frequency') +
+  #scale_y_continuous(labels = comma) +
+  #theme(plot.title = element_text(size=12))
+dev.off()
+
+hist(getRatings(normalize(Recipes, method="Z-score")), breaks=100)
 hist(rowCounts(r), breaks=50)
 hist(colMeans(r), breaks=20)
 
@@ -119,3 +153,55 @@ error <- rbind(UBCF = calcPredictionAccuracy(p1, getData(e, "unknown")),
                SVDF = calcPredictionAccuracy(p3, getData(e, "unknown")),
                UBCFP = calcPredictionAccuracy(p4, getData(e, "unknown")),
                UBCFC = calcPredictionAccuracy(p5, getData(e, "unknown")))
+
+
+# fig:user_little_ratings
+r_b <- binarize(Recipes, minRating=1)
+
+count_ratings <- function(el) {
+  sum(rowSums(r_b) <= el) / dim(Recipes)[1]
+}
+
+rounds <- 1:10
+num_users <- sapply(rounds, count_ratings)
+df <- data.frame(x=rounds, y=num_users)
+
+plots_dir = '/Users/benny/Repositories/recipes/paper/plots'
+phi <- 1.618
+width <- 4.9823
+height <- width/phi
+filename <- file.path(plots_dir, 'user_little_ratings.tex')
+tikz(file = filename, width = width, height = height)
+ggplot(df, aes(x)) + geom_bar(aes(weight = num_users)) +
+  ggtitle("Relative number of users with number of ratings <= x") +
+  ylab("Users (relative)") +
+  theme(plot.title = element_text(size=12))
+dev.off()
+
+# active_users
+
+active_users <- sort(rowSums(r@data != 0), decreasing = TRUE)[1:10]
+
+get_num_ratings <- function(row) {
+  length(getRatings(r[row]))
+}
+
+num_ratings_bigger <- function(val) {
+  sum(rowSums(r_b) > val)
+}
+
+ratings <- seq(100, 2000, by=100)
+users <- pbsapply(ratings, num_ratings_bigger)
+df <- data.frame(ratings, users)
+plots_dir = '/Users/benny/Repositories/recipes/paper/plots'
+phi <- 1.618
+width <- 4.9823
+height <- width/phi
+filename <- file.path(plots_dir, 'users_many_ratings.tex')
+tikz(file = filename, width = width, height = height)
+ggplot(df) + aes(x=ratings, y=users) + geom_line() + geom_point() +
+  ggtitle("Number of users with number of ratings >= x") +
+  xlab("x") +
+  ylab("Users") +
+  theme(plot.title = element_text(size=12))
+dev.off()

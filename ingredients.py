@@ -79,13 +79,16 @@ class StandardizedIngredients(object):
                     self._ingredient_maps_id[alias] = details['id']
 
                 # Map each id to the corresponding details
-                self._id_maps_details[id] = details
+                self._id_maps_details[details['id']] = details
 
     def ingredients(self):
         """
         Returns ingredients and aliasses, making no distiction between the two.
         """
         return self._ingredient_maps_id.keys()
+
+    def ingredient_mappings(self):
+        return [(self[ingredient]['name'], ingredient) for ingredient in self.ingredients()]
 
     def __getitem__(self, name):
         if isinstance(name, str) or isinstance(name, unicode):
