@@ -36,5 +36,5 @@ if __name__ == '__main__':
                     itemset.add(mapper[id_])
 
             for item in itemset:
-                fp.write(recipe['id'] + ',' + item + '\n')
+                fp.write(str(recipe['id']) + ',' + item + '\n')
     print("Finished!")
