@@ -205,3 +205,52 @@ ggplot(df) + aes(x=ratings, y=users) + geom_line() + geom_point() +
   ylab("Users") +
   theme(plot.title = element_text(size=12))
 dev.off()
+
+
+# Prepare data for decision tree
+
+r_n <- normalize(Recipes)
+
+# We want to obtain the reviews with a low normalized rating first
+reviews_low <- which(r_n@data < 0, arr.ind = TRUE)
+#reviews_neutral <- which(r_n@data == 0, arr.ind = TRUE)
+reviews_high <- which(r_n@data > 0, arr.ind = TRUE)
+
+hist(r_n@data[reviews_low])
+hist(r_n@data[reviews_high])
+
+r_m <- colMeans(r_n, na.rm = TRUE)
+
+require(hashmap)
+
+recipe_names <- Recipes@data@Dimnames[1:10][[2]]
+map <- hashmap(recipe_names, 1:length(recipe_names))
+
+# Remove recipes with small number of ratings
+
+no_recipe_ratings <- colSums(r_b)
+
+selectRecipes <- function(data, recipes.min_ratings) {
+  recipes_num_rating <- colSums(r_b)
+  vals <- recipes_num_rating[recipes_num_rating >= recipes.min_ratings]
+  cols <- names(vals)
+  data[,map[[cols]]]
+}
+
+s <- selectRecipes(Recipes, recipes.min_ratings = 10)  # Select recipes >= 5 ratings
+
+hist(getRatings(normalize(s)))
+
+hist(getRatings(normalize(s, method="Z-score")))#, breaks=100)
+
+r_n <- normalize(s, method="Z-score")  # Overwriting other attempt (clean this up)
+r_m <- colMeans(r_n, na.rm = TRUE)
+
+top_recipes <- sort(r_m, decreasing = TRUE)
+
+hist(r_m)
+
+# Select recipes based on average normalized rating
+recipes_good <- Recipes[,map[[names(r_m[r_m > 0])]]]
+recipes_bad <- Recipes[,map[[names(r_m[r_m < 0])]]]
+

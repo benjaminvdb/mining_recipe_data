@@ -247,7 +247,8 @@ One way to deal with this is to convert the rating matrix into a binary matrix $
 \end{figure}
 
 \noindent where $t \in S$ is a threshold on the rating value.
-Another option is to normalize the rating matrix by subtracting the user bias, e.g. a user's average rating.
+Another option is to normalize the rating matrix by subtracting the user's bias.
+This can be achieved, among other ways, by mean-centering the data, i.e., by subtracting the user's average rating.
 \cref{fig:normalized_ratings} shows the histogram of ratings after applying this transformation.
 It looks like a mixture of two gaussian distributions, one for positive and one for negative feedback, with a strong peak at the user's average rating.
 The deviation from the average rating is very small, with deviations $>1$ star being rare.
