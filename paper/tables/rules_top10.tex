@@ -1,0 +1,30 @@
+\pgfplotstabletypeset[%
+    every head row/.style={before row=\toprule, 
+    after row=\midrule},
+    every last row/.style={after row=\bottomrule},
+    col sep=semicolon,
+    header=true,
+%    font=\small,
+    columns/Rule/.style={
+        column type=l,
+        string type
+    },
+    columns/Confidence/.style={
+        column type=l,
+%        fixed,
+%        fixed zerofill,
+%        precision=2
+    },
+    columns/Support/.style={
+        column type=l,
+%        fixed,
+        fixed zerofill,
+        precision=2
+    }
+    columns/Life/.style={
+        column type=l,
+%        fixed,
+        fixed zerofill,
+        precision=2
+    }
+]{tables/rules_top10.dat}

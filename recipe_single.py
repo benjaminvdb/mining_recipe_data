@@ -1,29 +1,42 @@
 #!/usr/bin/env python
 
 import argparse
+import multiprocessing
 
 import numpy as np
 from tqdm import tqdm
+import glob2
 
 from toolbox.argparse.actions import readable_dir, readable_file, writable_file
+from toolbox.path import expand
 
-from recipe import get_recipes
 
+def load_recipe(filename):
+    return np.load(filename)['arr_0'][()]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Figure out the normalized ingredients from AllRecipes')
     parser.add_argument('recipes', action=readable_dir, help='input directory with recipes')
     parser.add_argument('mapping', action=readable_file, help='input file holding the mapping')
-    parser.add_argument('basket', action=writable_file, help='output basket file')
+    parser.add_argument('single', action=writable_file, help='output basket file')
+    parser.add_argument('--pool-size', '-p', default=multiprocessing.cpu_count(), help='pool size (= number of workers)')
 
     args = parser.parse_args()
 
+    p = multiprocessing.Pool(args.pool_size)
+
+    directory = expand(args.recipes)
+
     print("Loading recipes...")
-    recipes = get_recipes(args.recipes)
+    recipes = []
+    for recipe in tqdm(p.imap_unordered(glob2.iglob(directory + '/**/*'))):
+        if recipe:
+            recipes.append(recipe)
+
     print("Finished loading %d recipes." % len(recipes))
 
     print("Loading mapper...")
-    mapper = dict(filter(lambda x: x is not None, np.load(args.mapping)['arr_0'][()]))
+    mapper = dict(recipes)
     print("Finished loading mapper with %d keys." % len(mapper.keys()))
 
     print("Computing recipe itemsets and saving to file...")

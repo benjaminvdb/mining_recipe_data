@@ -1,18 +1,36 @@
 require(arules)
 require(arulesViz)
+require(tikzDevice)
+
+base_dir = '/Users/benny/Repositories/recipes/paper'
+tables_dir = file.path(base_dir, 'tables')
+plots_dir = file.path(base_dir, 'plots')
+
+saveTikz <- function(plt, filename) {
+  phi <- 1.618
+  width <- 4.9823
+  height <- width/phi
+  filename <- file.path(plots_dir, filename)
+  tikz(file = filename, width = width, height = height)
+  replayPlot(plt)
+  dev.off()
+}
 
 # Load data
-filename <- '/Users/benny/Repositories/recipes/data/recipes.basket'
-Recipes = read.transactions(filename, format='basket', sep=',')
+filename <- '/Users/benny/Repositories/recipes/data/recipes.single'
+Recipes = read.transactions(filename, format='single', sep=',', cols=seq(1, 2))
 
 # Create summary
 summary(Recipes)
 
 # Mine rules using Apriori
-rules <- apriori(Recipes, parameter=list(support=0.01, confidence=0.5))
+rules <- apriori(Recipes, parameter=list(support=0.02, confidence=0.5))
 
 # Top 3 rules according to lift
-inspect(head(sort(rules, by ="lift"),100))
+inspect(head(sort(rules, by ="lift"), 10))
+
+top10 <- as(head(sort(rules, by ="lift"), 10), 'data.frame')
+write.table(top10, file.path(tables_dir, 'rules_top10.dat'), sep = ';', col.names = TRUE, row.names = FALSE)
 
 # Scatter plot
 plot(rules)
@@ -61,7 +79,7 @@ plot(subrules2, method="graph", control=list(type="itemsets"))
 
 # Export to Gephi!!
 # NOTE: here we quickly found there seem to be two clusterd ('hartig' en 'zoetig'?)
-saveAsGraph(head(sort(rules, by="lift"),1000), file="rules.graphml")
+saveAsGraph(head(sort(rules, by="lift"),200), file="rules2.graphml")
 
 plot(subrules2, method="paracoord", control=list(reorder=TRUE))
 
@@ -157,3 +175,46 @@ mod_stargazer(filename, t, summary=FALSE, digit.separator=' ')
 filename <- filename <- file.path(tables_dir, 'ingredients_top10.dat')
 write.table(t, file = filename, quote = FALSE, sep = ";",
             row.names = FALSE, col.names = TRUE)
+
+library(party)
+
+f <- function(v) {v <= 1000}
+
+a <- as(Recipes[1:2000], 'matrix')
+b <- cbind(a, sapply(1:2000, f))
+dimnames <- attr(b, 'dimnames')
+dimnames[[2]][404] <- 'class'
+attr(b, 'dimnames') <- dimnames
+
+data = data.frame(b)
+
+#tree <- ctree(class ~ pepper + salt, data = data)
+
+tinfo <- as(transactionInfo(Recipes), 'list')[[1]]  # Get list of index -> tid
+tid_to_index <- hashmap(tinfo, sapply(1:length(tinfo), toString))
+good_tids <- unlist(recipes_good@data@Dimnames[[2]])
+bad_tids <- unlist(recipes_bad@data@Dimnames[[2]])
+
+GoodRecipes <- Recipes[tid_to_index[[good_tids]]]
+BadRecipes <- Recipes[tid_to_index[[bad_tids]]]
+
+good <- as(GoodRecipes, 'matrix')
+bad <- as(BadRecipes, 'matrix')
+
+good <- cbind(good, 1)
+bad <- cbind(bad, 2)
+
+data <- rbind(good, bad)
+
+dimnames <- attr(data, 'dimnames')
+dimnames[[2]][404] <- 'class'
+attr(data, 'dimnames') <- dimnames
+
+write.csv(data, 'good_bad.csv')
+
+# Frequency of item pairs
+X <- as(Recipes, 'matrix')
+X <- sapply(as.data.frame(X), as.numeric)
+out <- crossprod(X)  # Same as: t(X) %*% X
+diag(out) <- 0  
+

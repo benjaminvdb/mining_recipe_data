@@ -30,6 +30,15 @@ This gives us the possibility to test the Foodpairing hypothesis, that states th
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+\section{Related Work}
+\label{sec:related_work}
+
+Lala
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \section{Dataset}
 \label{sec:dataset}
 
@@ -258,10 +267,145 @@ The clusters defined by two different distributions are interesting for to analy
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+\section{Methodology}
+\label{sec:methodology}
+
+This section explains the methods and techniques used in the analysis of the datasets.
+The two datasets, the ingredient itemsets and user ratings, have different nature and it requires different tools to analyze them.
+Looking at the ingredient itemsets, here we are particularly interested in combinations of ingredients that frequently occur in the data.
+The rating data can be seen as a sample of a much larger dataset that contains preferences of a set of people towards a set of recipes.
+Most of the ratings are however unknown and the main objective here is to approximate these ratings such that they can be studied in relation to the ingredient sets.
+
+
+%============================================================
+
+
+The ingredient itemsets can be studied using techniques from \emph{Association Rule Mining}, that mine patterns consisting of frequently occurring set of items, called \emph{association rule mining} \citep{Agrawal1993}.
+This is method that was originally used to mine shopping baskets for frequently occurring patterns, which can be used for e.g. product placement in stores and marketing purposes.
+It the problem is formally defined as:
+
+\begin{definition}[Association Rule Mining]
+	Let $I = \{i_1, i_2, \dots, i_n\}$ be a set of $n$ binary attributes called items. Each transaction in $\mathcal{D}=\{t_1, t_2, \dots, t_m$ be a set of transaction called the \emph{database}. Each transaction in $\mathcal{D}$ has a unique transaction ID and contains a subset of the item in $I$. A \emph{rule} is defined as an implication of the form $X \implies Y$ where $X,Y \subseteq I$ and $X \cap Y=\empty$. The sets of item (for short \emph{itemsets}) $X$ and $Y$ are called \emph{antecedent} (left-hand-side or LHS) and \emph{consequent} (right-hand-side or RHS) of the rule.
+\end{definition}
+
+Since the number of possible combinations of ingredients, and therefore rules, is extremely large, a number of \emph{interestingness measures} can be used to narrow the search down.
+One observation is that association rules that only infrequently occur are not interesting.
+Another is that the number of transaction for which an association rule holds, i.e., $X \implies Y$, should be sufficiently large.
+These two observations are captured in the following measures of interestingness:
+
+\begin{definition}[Support]
+	The \emph{support} of a given itemset $X$, with respect to a database $\mathcal{D}$, is defined as the proportion of transactions in the database which contains the itemset $X$, i.e.:
+	\begin{equation*}
+		\mathrm{supp}(X)=|\{t \mid t\in\mathcal{D}, X \subseteq t\}|
+	\end{equation*}
+	\noindent with $|\cdot|$ denoting the cardinality of a set.
+\end{definition}
+
+By setting a threshold on the support of an itemset, it is possible to exclude sets with a low threshold when searching the database, effectively pruning the search space.
+
+\begin{definition}[Confidence]
+	The \emph{confidence} value of a rule, with respect to a database $\mathcal{D}$, is the proportion of the transaction that contain both itemsets $X$ and $Y$, i.e,:
+	\begin{equation}
+		\mathrm{conf}(X \implies Y)=\mathrm{supp}(X \cup Y)/\mathrm{supp}(X)
+	\end{equation}
+	\noindent $\mathrm{conf}(X \implies Y)$ is defined to be $0$ for $\mathrm{supp}(X)=0$.
+\end{definition}
+
+The interpretation of the confidence value is that it is an estimate of the probability $P(Y \mid X)$, the probability of finding the antecedent of the rule in transactions under the condition that these transactions also contain the precedent.
+The confidence value can be used to prune the search space from association rules that infrequently hold.
+Using the definition of support, we can formally define a frequent dataset as follows:
+
+\begin{definition}[Frequent Itemset]
+	A \emph{frequent itemset} is a set $X$ for which $\mathrm{supp}(X)>t$, where $t$ is some support threshold value.
+\end{definition}
+
+If the support threshold is set to a low value, a lot of maximal frequent itemsets are often found.
+Because of that, computing association rules from these frequent itemsets might still prove intractable.
+The definition of \emph{support}, however, defines that subsets of frequent itemsets also have to be frequent \citep{Hahsler2007}.
+This allows us to mine only the \emph{maximal informative itemsets}, since their union contains all frequent itemsets.
+
+\begin{definition}[Maximal Frequent Itemset]
+	A \emph{maximal frequent itemset} $X$ is a frequent itemset that is not a proper subset of another frequent itemset.
+\end{definition}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \section{Data Mining}
 \label{sec:data_mining}
 
 This section describes the experiments that were performed on the datasets to obtain a better understanding of what makes a good recipe.
-First, the itemsets of ingredients is mined for general patterns using association rule mining.
+First, the itemsets of ingredients are mined for general patterns using association rule mining.
 After that, the dataset is divided into two clusters, a positive and negative dataset, using the rating dataset.
 A decision tree model is then used to learn a decision boundary between these two clusters, which is then analyzed in detail.
+
+
+%============================================================
+
+
+\subsection{Association Rule Mining}
+\label{subsec:association_rule_mining}
+
+This section covers the analysis of the ingredient dataset using association rule mining.
+Using the apriori algorithm, we mine the dataset for association rules with a confidence of $0.5$ and a coverage of $0.02$, resulting in a set of $1003$ association rules.
+\cref{tab:rules_top10} shows the association rules that have the highest lift.
+They describe patterns commonly found in sweet, oven-baked dishes, such as cookies and pies.
+Nutmeg and cinnamon are often used in combination with clover in cookie mixes (e.g. in `speculaas'), so it is not strange to find the pattern \{nutmeg\} $\rightarrow$ \{cinnamon\}.
+The list is however dominated by vanilla as the antecedent and very similar rules.
+This could be caused by a strong bias towards these type of dishes in the dataset, because this would result in a high coverage, which is one of the interestingness measures the rules are pruned on.
+Looking more closely at the recipes, this does not seem the case, however, as depicted before in \cref{fig:ingredient_frequencies}.
+Many recipes include ingredients such as pepper, onions and cheese, which are normally not used in deserts.
+This result shows that the ingredients used in these meals are more predictable, in that they are often used in a similar way.
+
+
+\begin{table}[htbp]
+	\caption{Top 10 of association rules ordered by lift.}
+	\label{tab:rules_top10}
+	
+	\centering
+	\begin{tabular}{l l l l}
+		\toprule
+		\textbf{Rule} & \textbf{Sup.} & \textbf{Conf.} & \textbf{Lift} \\
+		\midrule
+		\{nutmeg\} $\rightarrow$ \{cinnamon\} & 0.024 & 0.58 & 6.23 \\
+		\{chocolate, eggs, sugar\} $\rightarrow$ \{vanilla\} & 0.024 & 0.68 & 5.04 \\
+		\{chocolate, flour, sugar\} $\rightarrow$ \{vanilla\} & 0.020 & 0.68 & 5.00 \\
+		\{chocolate, flour\} $\rightarrow$ \{vanilla\} & 0.021 & 0.67 & 4.94 \\
+		\{chocolate, salt\} $\rightarrow$ \{vanilla\} & 0.020 & 0.66 & 4.89 \\
+		\{chocolate, eggs\} $\rightarrow$ \{vanilla\} & 0.025 & 0.64 & 4.76 \\
+		\{butter, eggs, flour, salt, sugar\} $\rightarrow$ \{vanilla\} & 0.029 & 0.61 & 4.54 \\
+		\{butter, eggs, flour, sugar\} $\rightarrow$ \{vanilla\} & 0.042 & 0.61 & 4.51 \\
+		\{butter, eggs, salt, sugar\} $\rightarrow$ \{vanilla\} & 0.031 & 0.61 & 4.49 \\
+		\{butter, eggs, milk, sugar\} $\rightarrow$ \{vanilla\} & 0.022 & 0.60 & 4.45 \\
+		\bottomrule
+	\end{tabular}
+	
+\end{table}
+
+\begin{figure}[htbp]
+	\input{plots/rules_scatter}	
+\end{figure}
+
+
+\begin{figure}[htbp]
+	\centering
+
+	\includegraphics[width=\textwidth]{plots/ingredient_rules_graph}
+	
+	\caption{This network of association rules shows there are two highly connected groups of ingredients, connected to each other by common ingredients, such as salt and water.}
+	\label{fig:ingredient_rules_graph}
+\end{figure}
+
+
+%============================================================
+
+
+\subsection{Collaborative Filtering}
+\label{subsec:collaborative_filtering}
+
+In this section we look at how the user rating data can be used to build a recommender system that is able to suggest new recipes to users.
+As described in \cref{subsubsec:user_ratings}, the dataset derived from Allrecipes consists of over $3$ million user ratings from $1$ to $5$ stars.
+The rating matrix is very sparse, but we might be able to complete the matrix using well-known collaborative filtering techniques.
+

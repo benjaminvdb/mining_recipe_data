@@ -81,7 +81,7 @@ tuples <- tuples[
     subset(tuples, select = c('user_id', 'recipe_id'))  # One user, one rating
     )
   ]
-Recipes <- as(tuples, 'realRatingMatrix')
+RecipeRatings <- as(tuples, 'realRatingMatrix')
 
 require(ggplot2)
 require(RColorBrewer)
@@ -134,7 +134,12 @@ recom <- predict(r, Recipes[1001:1002], type="ratings")
 #small <- Recipes[1:10,1:10]
 #e <- evaluationScheme(small, method='cross-validation', given = rep(1, 1000))
 
-e <- evaluationScheme(Recipes[1:1000], method='cross-validation', given = -1)
+e <- evaluationScheme(RecipeRatings[1:1000], method='cross-validation', given = -1)
+
+r_b <- as(binarize(RecipeRatings, minRating=4), 'binaryRatingMatrix')
+e <- evaluationScheme(r_b[1:1000], method='cross-validation', given = -1)
+
+r <- Recommender(getData(e, "train"), "BIN")
 
 r1 <- Recommender(getData(e, "train"), "UBCF")
 r2 <- Recommender(getData(e, "train"), "SVD")
@@ -237,7 +242,7 @@ selectRecipes <- function(data, recipes.min_ratings) {
   data[,map[[cols]]]
 }
 
-s <- selectRecipes(Recipes, recipes.min_ratings = 10)  # Select recipes >= 5 ratings
+s <- selectRecipes(RecipeRatings, recipes.min_ratings = 10)  # Select recipes >= 5 ratings
 
 hist(getRatings(normalize(s)))
 
@@ -251,6 +256,6 @@ top_recipes <- sort(r_m, decreasing = TRUE)
 hist(r_m)
 
 # Select recipes based on average normalized rating
-recipes_good <- Recipes[,map[[names(r_m[r_m > 0])]]]
-recipes_bad <- Recipes[,map[[names(r_m[r_m < 0])]]]
+recipes_good <- RecipeRatings[,map[[names(r_m[r_m > 0])]]]
+recipes_bad <- RecipeRatings[,map[[names(r_m[r_m < 0])]]]
 
