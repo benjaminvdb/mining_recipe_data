@@ -1,0 +1,223 @@
+\section{Dataset}
+\label{sec:dataset}
+
+For the purpose of this research, several new datasets were constructed.
+While there exist a few recipe datasets, none of them include both the required ingredients, corresponding flavor components and user ratings.
+The recipes and user ratings were scraped from the food focussed social networking service Allrecipes.
+The resulting dataset was joined with FooDB, a comprehensive dataset on food constituents, chemistry and biology.
+In this paper we focus on the flavor component data in FooDB, which  describes for a large number of ingredients its constituent flavors.
+This section describes how the dataset was obtained, which choices were made, and gives a high-level overview of its contents.
+
+
+%============================================================
+
+
+\subsection{FooDB}
+\label{subsec:foodb}
+
+FooDB is a freely available resource on food constituent, chemistry and biology.
+The table that makes it interesting for this research is a list of chemicals that give foods their flavor, color, taste, texture and aroma.
+Another convenient feature is that foods in FooDB are named in quite general terms.
+For example, instead of having specific descriptions of various types of milk, such as \emph{low far}, \emph{skimmed milk} and \emph{whole milk}, these are referred to simply as milk.
+These different types of milk taste differently because the ratio of chemical components is different, but the components themselves are mostly the same.
+These names can therefore be used as a equivalence group to which to which we will map more specific ingredient names (see \cref{subsec:allrecipes}).
+The following tables are used:
+
+\begin{description}
+	\item [Foods ($893$ items)] metadata concerning certain foods, such as a general and scientific name and a food group (e.g. `Herbs and Spices').
+	\item [Flavors ($856$ items)] categorizes flavors (e.g. `odor`), and groups them (e.g. `vegetable').
+	\item [Chemical compounds ($\num{27593}$ items)] the core of the dataset, describing each compound using $100$ attributes, such as chemical formula and references to literature.
+\end{description}
+
+Separate mappings are available that provide a many-to-many mapping between compounds and the other tables.
+Mapping ingredients from recipes to FooDB therefore provides us with detailed information about both the chemicals and the human sensory perception of these chemicals.
+
+
+%============================================================
+
+
+\subsection{Allrecipes}
+\label{subsec:allrecipes}
+
+Allrecipes is a social networking service that is focussed on recipes for meals.
+Visitors of the website can browse through the collection of recipes that were submitted by its members.
+Recipes are categorized by the type of course, by season, special occasions (e.g. `Christmas`) among others.
+Anyone can sign up for a membership, which gives access to some additional functionality and enables members to submit their own recipes and rate other recipes.
+Two datasets were generated from the information available at Allrecipes: a dataset consisting of ingredients used in recipes and a dataset of user ratings of recipes.
+This section describes how these two datasets were obtained and provides a preliminary analysis of their contents.
+
+
+%------------------------------------------------------------
+
+
+\subsubsection{Ingredient sets}
+\label{subsubsec:ingredient_sets}
+
+Resources on the website, such as recipes, reviews and users, are given a unique identifier in a sequence, which makes it trivial to download the HTML page for each resource.
+Furthermore, the pages follow some of schemas for structured data markup of Schema.org.
+The recipe pages, for example, follow the \texttt{Recipe} schema including properties such as \texttt{totalTime} (total cooking time), \texttt{aggregateRating} (average rating of the recipe) and \texttt{author} (submitter of the recipe).
+The preparation procedure itself was omitted, since it is not of interest for this study.
+The only attribute that required some additional processing were the ingredients themselves.
+There seems to be no standardized way in which these ingredients are provided, although they have some structure.
+Consider for example: ``2 cups Cascadian Farm® organic frozen sweet corn, thawed''.
+It includes a quantity in cups, a brandname, a production paradigm, taste depiction and state.
+For the purpose of this research, we are interested only in `corn', which we will call a \emph{standardized ingredient}.
+These are obtained by removing the quantity and brandname, using a manually created grammar, and matching the resulting string to a list of standardized ingredients in the FooDB dataset (described below).
+
+\begin{table}[htbp]
+	\caption{An overview of recipe attributes.}
+	\label{tab:recipe_attributes}
+	
+	\centering
+	\begin{tabular}{l l}
+		\toprule
+		\textbf{Attribute} & \textbf{Description} \\
+		\midrule
+		calories & nutritional energy in kilocalories \\
+ 		cooking\_time & cooking time in seconds \\
+ 		id & Allrecipe recipe identifier \\
+ 		ingredients & a list of standardized ingredients \\
+ 		name & name of the recipe \\
+ 		nutrients & nutritional information, e.g. salt and sugar quantities \\
+ 		preparation\_time & preparation time (for cutting, washing, etc.) \\
+ 		total\_time & sum of preparation and cooking time \\
+ 		yields & number of portions for the given ingredient quantities \\
+ 	\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+	\caption{Summary of the datasets}
+	\label{tab:dataset_summary}
+	
+	\centering
+	\begin{tabular}{l r}
+		\toprule
+		\textbf{Description} & \textbf{\#} \\
+		\midrule
+		Recipes & $\num{91910}$ \\
+		Recipes with at least one rating & $\num{66846}$ \\
+		Standardized ingredients also in FooDB & $\num{406}$ \\
+		Users & $\num{745228}$ \\
+		Ratings & $\num{3253234}$ \\ 
+		Density of ingredient matrix $Y$ & $\num{1.95e-2}$ \\
+		Density of rating matrix $R$ & $\num{6.53e-5}$ \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+
+\cref{tab:recipe_attributes} provides an overview of all the recipe attributes that were obtained from Allrecipes, most of which are not the focus of this research.
+\cref{tab:dataset_summary} provides a summary of the datasets.
+We will be mostly concerned with the ingredient data, which can be represented as a sparse binary matrix $Y$ ($n \times m$):
+
+\begin{equation*}
+	\tag{Ingredient matrix}
+	Y_{ri}=
+	\begin{cases}
+	    1,& \text{if recipe } r \text{ contains ingredient } i \\
+	    0,& \text{otherwise}
+	\end{cases}
+\end{equation*}
+
+\cref{tab:ingredients_top10} provides an overview of the top $10$ most frequent ingredients, confirming what most people would assume.
+\cref{fig:ingredient_frequencies} plots the frequencies of all ingredients on a logarithmic scale, providing a global perspective.
+It shows that the ingredient frequencies follow a log-linear model, which can lead to problems when mining for patterns, since the available data for many ingredients is very limited.
+
+\begin{table}[htbp]
+	\caption{Top 10 of most frequent ingredients}
+	\label{tab:ingredients_top10}
+	
+	\centering
+	\input{tables/ingredients_top10}	
+\end{table}
+
+\begin{figure}[htbp]
+	\centering
+	\input{plots/ingredient_frequencies.tex}
+	\caption{Ingredient frequencies (red) follow the log-linear model (blue), showing that a small proportion of ingredients are used in most recipes, while many are scarcely used.}
+	\label{fig:ingredient_frequencies}
+\end{figure}
+
+
+%------------------------------------------------------------
+
+
+\subsubsection{User ratings}
+\label{subsubsec:user_ratings}
+
+The recipe pages provide some, but not all, of the reviews for that specific recipe, so these were downloaded and parsed separately.
+This dataset consists of $U \times M \times S$ tuples, where $U$ is the set of users of size $p$, $M$ the set of meals (or recipes) of size $q$, and scores $S=\left\{1, 2, \dots, 5\right\}$.
+A rating is an assignment of a score $s \in S$ by a user $u \in U$ to a meal $m \in M$, i.e., $r(u_i, m_j) \mapsto S$.
+These tuples can be conveniently represented as a sparse matrix $R$ $(p \times q)$ of ratings:
+
+\begin{equation*}
+	\tag{Rating matrix}
+	R_{ij}=
+	\begin{cases}
+	    r(u_i, m_j),& \text{if user } i \text{ rated meal } j \\
+	    0,& \text{otherwise}
+	\end{cases}
+\end{equation*}
+
+\begin{figure}[htbp]
+	\centering
+	\input{plots/user_ratings.tex}
+	\caption{From the plot it can be seen that the vast majority of reviews give the highest rating to the recipe, which might suggest that users might be more likely to review a recipe if they are positive about it.}
+	\label{fig:user_ratings}
+\end{figure}
+
+Meals with no ratings are left out of the rating matrix so that no columns have only zeros.
+\cref{tab:dataset_summary}, that was previously referred to, also shows some statistics on the rating data.
+About two thirds of the recipes have at least one rating.
+Another observation is that the density of the rating matrix several orders of magnitudes lower, which is caused by the fact that there are many more users than ingredients and most users rate only one recipe.
+This is also shown in \cref{fig:user_little_ratings}.
+The majority of users only reviewed a single recipe and \SI{90}{\percent} of the users has reviewed $\leq 7$ recipes.
+Knowing that many users submitted very few ratings might make it hard to make predictions about the ratings for recipes the user did not rate.
+On the other hand, Allrecipes has a few very active users with the top reviewer being a user that submitted $\num{5250}$ ratings.
+\cref{fig:user_many_ratings} zooms in on this end of tail and shows that is very uncommon.
+In fact, only $113$ users submitted more than $\num{1000}$ reviews.
+
+\begin{figure}[htbp]
+	\centering
+	\input{plots/user_little_ratings.tex}
+	\caption{The number of people with only a few ratings is large, though this is rather common. Approximately \SI{58}{\percent} of the users only rated one recipe, while \SI{94}{\percent} of users rated $\leq 10$ recipes.}
+	\label{fig:user_little_ratings}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\input{plots/users_many_ratings.tex}
+	\caption{There are a few users that submitted many ratings, but only $113$ users rated more than $1000$ recipes. One user even submitted $\num{5250}$ ratings.}
+	\label{fig:user_many_ratings}
+\end{figure}
+
+\cref{fig:user_ratings} shows the number of reviews per score.
+It seems that Allrecipes has a strong bias towards positive reviews, which might indicate that people tend to rate recipes that they appreciated.
+Another explanation could be that people probably submit their favorite recipes, that are more likely to receive positive feedback.
+Whatever the reason, the plot show that a difference between a $4$ and $5$ star rating is big.
+One way to deal with this is to convert the rating matrix into a binary matrix $\hat{R}$:
+
+\begin{equation*}
+	\tag{Binary Rating matrix}
+	\hat{R}_{ij}=
+	\begin{cases}
+	    1,& \text{if } R_{ij}>t \\
+	    0,& \text{otherwise}
+	\end{cases}
+\end{equation*}
+
+\begin{figure}[htbp]
+	\centering
+	\input{plots/normalized_ratings.tex}
+	\caption{Normalizing the user ratings using their average rating reveals that users tend to give most recipes that they review their average rating and a only small proportion a slightly less positive or negative rating (with a bias towards positive).}
+	\label{fig:normalized_ratings}
+\end{figure}
+
+\noindent where $t \in S$ is a threshold on the rating value.
+Another option is to normalize the rating matrix by subtracting the user's bias.
+This can be achieved, among other ways, by mean-centering the data, i.e., by subtracting the user's average rating.
+\cref{fig:normalized_ratings} shows the histogram of ratings after applying this transformation.
+It looks like a mixture of two gaussian distributions, one for positive and one for negative feedback, with a strong peak at the user's average rating.
+The deviation from the average rating is very small, with deviations $>1$ star being rare.
+The clusters defined by two different distributions are interesting for to analyze in further detail.

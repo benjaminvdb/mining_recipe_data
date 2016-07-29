@@ -1,0 +1,14 @@
+\begin{algorithmic}[1]
+    \Function{Apriori}{$\mathcal{D}$, $s_{\mathrm{min}}$}
+        \State $C_k$ \Comment{Candidate itemset of size $k$}
+        \State $L_k$ \Comment{Frequent itemsets of size $k$}
+        \State $L_1=\{\text{frequent items}\}$
+        \State $k=2$
+        \While {$L_{k-1} \neq \emptyset$}
+            \State $C_{k}:=\mathrm{ComputeCandidateSets}(L_{k-1})$
+            \State $L_{k}:=\mathrm{ComputeFrequentItemsets}(C_k, \mathcal{D}, s_{\mathrm{min}})$
+           	\State $k:=k+1$
+        \EndWhile
+        \State \Return $\bigcup_k L_k$
+    \EndFunction
+\end{algorithmic}

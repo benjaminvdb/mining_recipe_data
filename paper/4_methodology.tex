@@ -1,0 +1,102 @@
+\section{Methodology}
+\label{sec:methodology}
+
+This section explains the methods and techniques used in the analysis of the datasets.
+The two datasets, the ingredient itemsets and user ratings, have different nature and it requires different tools to analyze them.
+Looking at the ingredient itemsets, here we are particularly interested in combinations of ingredients that frequently occur in the data.
+The rating data can be seen as a sample of a much larger dataset that contains preferences of a set of people towards a set of recipes.
+Most of the ratings are however unknown and the main objective here is to approximate these ratings such that they can be studied in relation to the ingredient sets.
+
+
+%============================================================
+
+
+\subsection{Frequent Itemsets and Association Rules}
+\label{subsec:frequent_itemsets}
+
+The ingredient itemsets can be studied using techniques from \emph{Association Rule Mining}, that mine patterns consisting of frequently occurring set of items, called \emph{association rule mining} \citep{Agrawal1993}.
+This is method that was originally used to mine shopping baskets for frequently occurring patterns, which can be used for e.g. product placement in stores and marketing purposes.
+It the problem is formally defined as:
+
+\begin{definition}[Association Rule Mining]
+	Let $I = \{i_1, i_2, \dots, i_n\}$ be a set of $n$ binary attributes called items. Each transaction in $\mathcal{D}=\{t_1, t_2, \dots, t_m$ be a set of transaction called the \emph{database}. Each transaction in $\mathcal{D}$ has a unique transaction ID and contains a subset of the item in $I$. A \emph{rule} is defined as an implication of the form $X \rightarrow Y$ where $X,Y \subseteq I$ and $X \cap Y=\empty$. The sets of item (for short \emph{itemsets}) $X$ and $Y$ are called \emph{antecedent} (left-hand-side or LHS) and \emph{consequent} (right-hand-side or RHS) of the rule.
+\end{definition}
+
+Since the number of possible combinations of ingredients, and therefore rules, is extremely large, a number of \emph{interestingness measures} can be used to narrow the search down.
+One observation is that association rules that only infrequently occur are not interesting.
+Another is that the number of transaction for which an association rule holds, i.e., $X \rightarrow Y$, should be sufficiently large.
+These two observations are captured in the following measures of interestingness:
+
+\begin{definition}[Support]
+	The \emph{support} of a given itemset $X$, with respect to a database $\mathcal{D}$, is defined as the proportion of transactions in the database which contains the itemset $X$, i.e.:
+	\begin{equation*}
+		\mathrm{supp}(X)=|\{t \mid t\in\mathcal{D}, X \subseteq t\}|
+	\end{equation*}
+	\noindent with $|\cdot|$ denoting the cardinality of a set.
+\end{definition}
+
+By setting a threshold on the support of an itemset, it is possible to exclude sets with a low threshold when searching the database, effectively pruning the search space.
+
+\begin{definition}[Confidence]
+	The \emph{confidence} value of a rule, with respect to a database $\mathcal{D}$, is the proportion of the transaction that contain both itemsets $X$ and $Y$, i.e,:
+	\begin{equation*}
+		\mathrm{conf}(X \rightarrow Y)=\frac{\mathrm{supp}(X \cup Y)}{\mathrm{supp}(X)}
+	\end{equation*}
+	\noindent $\mathrm{conf}(X \rightarrow Y)$ is defined to be $0$ for $\mathrm{supp}(X)=0$.
+\end{definition}
+
+The interpretation of the confidence value is that it is an estimate of the probability $P(Y \mid X)$, the probability of finding the antecedent of the rule in transactions under the condition that these transactions also contain the precedent.
+The confidence value can be used to prune the search space from association rules that infrequently hold.
+Using the definition of support, we can formally define a frequent dataset as follows:
+
+\begin{definition}[Frequent Itemset]
+	A \emph{frequent itemset} is a set $X$ for which $\mathrm{supp}(X)>t$, where $0 \leq t \leq 1$ is some support threshold value.
+\end{definition}
+
+If the support threshold is set to a low value, a lot of maximal frequent itemsets are often found.
+Because of that, computing association rules from these frequent itemsets might still prove intractable.
+The definition of \emph{support}, however, defines that subsets of frequent itemsets also have to be frequent \citep{Hahsler2007}.
+This allows us to mine only the \emph{maximal informative itemsets}, since their union contains all frequent itemsets.
+
+\begin{definition}[Maximal Frequent Itemset]
+	A \emph{maximal frequent itemset} $X$ is a frequent itemset that is not a proper subset of another frequent itemset.
+\end{definition}
+
+There exist a number of association rule mining algorithms, but for this research, the Apriori algorithm will be used.
+Apriori utilizes the the fact that all subsets of a frequent itemset are also frequent itemsets.
+The high-level pseudocode of the algorithm is given in \cref{alg:apriori}, with most of the details left out, which can be found in the work of \cite{Agrawal1993}.
+The algorithm uses a bottom-up approach that constructs larger and larger frequent itemsets by combining frequent itemsets found in earlier iteration into a \emph{candidate set} (line $7$) and then testing for the minimal support (line $8$).
+The stopping criterion is that the frequent itemset of the previous round should not be empty, which occurs when no itemsets were found that have a sufficiently high support.
+Computing frequent itemsets can be performed efficiently, because the support for subsets of new candidates have been computed in a previous iteration.
+
+\begin{algorithm}[htbp]
+	\caption{Computes maximal frequent itemsets}
+	\label{alg:apriori}
+	\input{algorithms/apriori}
+\end{algorithm}
+
+Association rules can now be computed from the set of maximal frequent itemsets $F$ by generating from each element all possible rules and computing their individual confidence scores.
+
+
+%============================================================
+
+
+\subsection{Recommender Systems}
+\label{subsec:recommender_systems}
+
+The intended purpose of this research is to suggest recipes and ingredients to users.
+A lot of research has been done on \emph{Recommender Systems} that solve this recommendation problem.
+
+\begin{definition}[Recommendation Problem]
+	Given database $\mathcal{D} \in U \times M \times S$ tuples of ratings $s\in S$ that users $u \in U$ have given to items $m \in M$, and a user $u_i \in U$, return a list $(m_1, m_2, \dots, m_N)$ of items not in $\mathcal{D}$.
+\end{definition}
+
+This problem can be approached in several ways, but two are the most common:
+
+\begin{enumerate}
+	\item The ratings for user-item pairs not in the database can be approximated from the dataset, after which a top-$N$ ranking can be presented.
+	\item A top-$N$ list of recommendations can be presented without computing all ratings first (which can be computationally expensive).
+\end{enumerate}
+
+
+

@@ -13,6 +13,7 @@
 
 %%% Preamble
 \documentclass[11pt,a4paper,oneside]{article}
+\usepackage{newclude}
 
 \setlength{\parskip}{1em}
 
@@ -24,7 +25,7 @@
 \degreeyear{2015}
 
 %%% Modular includes
-%\includeonly{1_introduction}
+\includeonly{4_methodology}
 
 
 % % % % % % % % % % % % % % % % % % % % % %
@@ -34,10 +35,16 @@
 
 %%% Some content
 
-\include{1_body}
+\include*{1_introduction}
+\include*{2_related_work}
+\include*{3_dataset}
+\include*{4_methodology}
+\include*{5_data_mining}
+\include*{6_conclusions}
+
 
 % Bibliography
-%\bibliographystyle{plainnat}
-%\bibliography{mybib}
+\bibliographystyle{plainnat}
+\bibliography{mybib}
 
 \end{document}

@@ -1,0 +1,75 @@
+\section{Data Mining}
+\label{sec:data_mining}
+
+This section describes the experiments that were performed on the datasets to obtain a better understanding of what makes a good recipe.
+First, the itemsets of ingredients are mined for general patterns using association rule mining.
+After that, the dataset is divided into two clusters, a positive and negative dataset, using the rating dataset.
+A decision tree model is then used to learn a decision boundary between these two clusters, which is then analyzed in detail.
+
+
+%============================================================
+
+
+\subsection{Association Rule Mining}
+\label{subsec:association_rule_mining}
+
+This section covers the analysis of the ingredient dataset using association rule mining.
+Using the apriori algorithm, we mine the dataset for association rules with a confidence of $0.5$ and a coverage of $0.02$, resulting in a set of $1003$ association rules.
+\cref{tab:rules_top10} shows the association rules that have the highest lift.
+They describe patterns commonly found in sweet, oven-baked dishes, such as cookies and pies.
+Nutmeg and cinnamon are often used in combination with clover in cookie mixes (e.g. in `speculaas'), so it is not strange to find the pattern \{nutmeg\} $\rightarrow$ \{cinnamon\}.
+The list is however dominated by vanilla as the antecedent and very similar rules.
+This could be caused by a strong bias towards these type of dishes in the dataset, because this would result in a high coverage, which is one of the interestingness measures the rules are pruned on.
+Looking more closely at the recipes, this does not seem the case, however, as depicted before in \cref{fig:ingredient_frequencies}.
+Many recipes include ingredients such as pepper, onions and cheese, which are normally not used in deserts.
+This result shows that the ingredients used in these meals are more predictable, in that they are often used in a similar way.
+
+
+\begin{table}[htbp]
+	\caption{Top 10 of association rules ordered by lift.}
+	\label{tab:rules_top10}
+	
+	\centering
+	\begin{tabular}{l l l l}
+		\toprule
+		\textbf{Rule} & \textbf{Sup.} & \textbf{Conf.} & \textbf{Lift} \\
+		\midrule
+		\{nutmeg\} $\rightarrow$ \{cinnamon\} & 0.024 & 0.58 & 6.23 \\
+		\{chocolate, eggs, sugar\} $\rightarrow$ \{vanilla\} & 0.024 & 0.68 & 5.04 \\
+		\{chocolate, flour, sugar\} $\rightarrow$ \{vanilla\} & 0.020 & 0.68 & 5.00 \\
+		\{chocolate, flour\} $\rightarrow$ \{vanilla\} & 0.021 & 0.67 & 4.94 \\
+		\{chocolate, salt\} $\rightarrow$ \{vanilla\} & 0.020 & 0.66 & 4.89 \\
+		\{chocolate, eggs\} $\rightarrow$ \{vanilla\} & 0.025 & 0.64 & 4.76 \\
+		\{butter, eggs, flour, salt, sugar\} $\rightarrow$ \{vanilla\} & 0.029 & 0.61 & 4.54 \\
+		\{butter, eggs, flour, sugar\} $\rightarrow$ \{vanilla\} & 0.042 & 0.61 & 4.51 \\
+		\{butter, eggs, salt, sugar\} $\rightarrow$ \{vanilla\} & 0.031 & 0.61 & 4.49 \\
+		\{butter, eggs, milk, sugar\} $\rightarrow$ \{vanilla\} & 0.022 & 0.60 & 4.45 \\
+		\bottomrule
+	\end{tabular}
+	
+\end{table}
+
+\begin{figure}[htbp]
+	\input{plots/rules_scatter}	
+\end{figure}
+
+
+\begin{figure}[htbp]
+	\centering
+
+	\includegraphics[width=\textwidth]{plots/ingredient_rules_graph}
+	
+	\caption{This network of association rules shows there are two highly connected groups of ingredients, connected to each other by common ingredients, such as salt and water.}
+	\label{fig:ingredient_rules_graph}
+\end{figure}
+
+
+%============================================================
+
+
+\subsection{Collaborative Filtering}
+\label{subsec:collaborative_filtering}
+
+In this section we look at how the user rating data can be used to build a recommender system that is able to suggest new recipes to users.
+As described in \cref{subsubsec:user_ratings}, the dataset derived from Allrecipes consists of over $3$ million user ratings from $1$ to $5$ stars.
+The rating matrix is very sparse, but we might be able to complete the matrix using well-known collaborative filtering techniques.
