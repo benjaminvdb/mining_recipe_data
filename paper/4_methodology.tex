@@ -88,15 +88,31 @@ The intended purpose of this research is to suggest recipes and ingredients to u
 A lot of research has been done on \emph{Recommender Systems} that solve this recommendation problem.
 
 \begin{definition}[Recommendation Problem]
-	Given database $\mathcal{D} \in U \times M \times S$ tuples of ratings $s\in S$ that users $u \in U$ have given to items $m \in M$, and a user $u_i \in U$, return a list $(m_1, m_2, \dots, m_N)$ of items not in $\mathcal{D}$.
+	Given database $\mathcal{D} \in U \times M \times S$ tuples of ratings $s\in S$ that users $u \in U$ have given to items $m \in M$, and an \emph{active user} $u_a \in U$, return a list $(m_1, m_2, \dots, m_N)$ of items not in $\mathcal{D}$.
 \end{definition}
 
 This problem can be approached in several ways, but two are the most common:
 
 \begin{enumerate}
-	\item The ratings for user-item pairs not in the database can be approximated from the dataset, after which a top-$N$ ranking can be presented.
+	\item The ratings for user-item pairs not in the database can be approximated from the dataset, after which a top-$N$ ranking for the active user is computed.
 	\item A top-$N$ list of recommendations can be presented without computing all ratings first (which can be computationally expensive).
 \end{enumerate}
 
+Transforming the database into a sparse matrix $R$ with $R_{ij}=0$ if user $u_i$ did not rate $m_j$, with usually a low density (see \cref{subsubsec:user_ratings}).
+The first method fills in these missing values by collecting preferences of many users in collaboration.
+This method is also called \emph{Collaborative Filtering} (CF), a general term for a range of series based on the idea of collaboration.
+Several techniques exist of which a few will be used and compared.
 
+For the second method, association rules can be applied, which result in a descriptive way of recommending items.
+The database is mined for rules in the form of ``if a user likes items $m_p$ and $m_q$ then he/she also likes item $m_r$''.
+These patterns are then searched for the user's rated item, after which a recommendation can be presented.
+
+
+%------------------------------------------------------------
+
+
+\subsubsection{User-based Collaboration Filtering}
+
+User-based collaboration filtering computes missing user ratings by assuming that users with a similar preference, their \emph{peers}, will give ratings similar to their peers to unseen items.
+The database is searched for users that are similar with respect to some distance metric and their ratings are aggregated, for example by taking the mean of a group of peers of size $k$.
 
