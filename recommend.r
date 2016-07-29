@@ -28,7 +28,7 @@ tuples <- tuples[
 RecipeRatings <- as(tuples, 'realRatingMatrix')
 flog.info("Finished loading rating data.")
 
-e <- evaluationScheme(RecipeRatings[1:20], method='cross-validation', given = -1)
+e <- evaluationScheme(RecipeRatings, method='cross-validation', given = -1)
 
 flog.info("Building models...")
 r1 <- Recommender(getData(e, "train"), "UBCF")
