@@ -114,5 +114,38 @@ These patterns are then searched for the user's rated item, after which a recomm
 \subsubsection{User-based Collaboration Filtering}
 
 User-based collaboration filtering computes missing user ratings by assuming that users with a similar preference, their \emph{peers}, will give ratings similar to their peers to unseen items.
-The database is searched for users that are similar with respect to some distance metric and their ratings are aggregated, for example by taking the mean of a group of peers of size $k$.
+The database is searched for users that are similar, called the \emph{neighborhood}, with respect to some distance metric and their ratings are aggregated, for example by taking the mean the neighborhood.
+We will use two distance metrics in this study: the \emph{Jaccard distance} and the \emph{Pearson correlation coefficient}.
+
+\begin{equation}
+	  \mathrm{sim}_{\mathrm{Jaccard}}(A,B) = {{|A \cap B|}\over{|A \cup B|}} = {{|A \cap B|}\over{|A| + |B| - |A \cap B|}}
+\end{equation}
+
+The Jaccard distance operates on itemsets, so in order to apply it to input vectors $\bm{x}$ and $\bm{y}$, these vectors are translated to their binary counterparts $\bm{x}^{*}$ and $\bm{y}^{*}$:
+
+\begin{equation}
+	\bm{x}^{*}_{i} =
+	\begin{cases}
+	    1,& \text{if } x_i > 0 \\
+	    0,& \text{otherwise}
+	\end{cases}
+\end{equation}
+
+The Jaccard distance can then be calculated using this binary presentation instead.
+For this, we first define four functions:
+
+\begin{description}
+	\setlength\itemsep{0em}
+	\item [$M_{11}$] total number of positions where $x_i^{*}=y_i^*=1$
+	\item [$M_{01}$] total number of positions where $x_i^*=0 \land y_i^*=0$
+	\item [$M_{10}$] total number of positions where $x_i^*=1 \land y_i^*=0$
+	\item [$M_{00}$] total number of positions where $x_i^*=y_i^*=0$
+\end{description}
+
+\begin{equation}
+	\mathrm{sim}_{\mathrm{Jaccard}}=\frac{M_{11}}{M_{01} + M_{10} + M_{11}}
+\end{equation}
+
+This shows that the Jaccard similarity can be computed from the rating matrix itself.
+
 

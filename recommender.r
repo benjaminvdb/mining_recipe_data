@@ -235,7 +235,9 @@ map <- hashmap(recipe_names, 1:length(recipe_names))
 
 no_recipe_ratings <- colSums(r_b)
 
-selectRecipes <- function(data, recipes.min_ratings) {
+selectRecipes <- function(data, users.min_ratings, recipes.min_ratings) {
+  data <- data[rowSums(data[, -1]) > users.min_ratings,
+               colSums(data[-1,]) > recipes.min_ratings]
   recipes_num_rating <- colSums(r_b)
   vals <- recipes_num_rating[recipes_num_rating >= recipes.min_ratings]
   cols <- names(vals)
