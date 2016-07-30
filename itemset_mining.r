@@ -218,3 +218,23 @@ X <- sapply(as.data.frame(X), as.numeric)
 out <- crossprod(X)  # Same as: t(X) %*% X
 diag(out) <- 0  
 
+library("recommenderlab")
+algorithms <- list(#"random items" = list(name = "RANDOM", param = NULL),
+                   #"popular items" = list(name = "POPULAR", param = NULL),
+                   #"association rules (0.01)" = list(name = "AR", param = list(support = 0.01)),
+                   #"association rules (0.05)" = list(name = "AR", param = list(support = 0.05)),
+                   #"association rules (0.1)" = list(name = "AR", param = list(support = 0.1)))
+                  "item-based CF (k=3)" = list(name = "IBCF", param = list(k = 3)),
+                  "item-based CF (k=5)" = list(name = "IBCF", param = list(k = 5)),
+                  "item-based CF (k=10)" = list(name = "IBCF", param = list(k = 10)),
+                  "item-based CF (k=20)" = list(name = "IBCF", param = list(k = 20)))
+                   #"user-based CF (Jaccard)" = list(name = "UBCF", param = list(nn = 50, method = 'jaccard')))
+                   #"user-based CF (Pearson)" = list(name = "UBCF", param = list(nn = 50, method = 'pearson')))
+
+Recipes_binary <- as(Recipes, 'binaryRatingMatrix')
+
+scheme <- evaluationScheme(Recipes_binary, method="split", train=.9, k=1, given=-1, progress)
+
+results2 <- evaluate(scheme, algorithms, progress = TRUE,
+                    type = "topNList", n=c(1))#,3,5,10,15,20))
+
