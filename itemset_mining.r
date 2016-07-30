@@ -219,19 +219,23 @@ out <- crossprod(X)  # Same as: t(X) %*% X
 diag(out) <- 0  
 
 library("recommenderlab")
-algorithms <- list(#"random items" = list(name = "RANDOM", param = NULL),
-                   #"popular items" = list(name = "POPULAR", param = NULL),
-                   #"association rules (0.01)" = list(name = "AR", param = list(support = 0.01)),
-                   #"association rules (0.05)" = list(name = "AR", param = list(support = 0.05)),
-                   #"association rules (0.1)" = list(name = "AR", param = list(support = 0.1)))
-                  "item-based CF (k=3)" = list(name = "IBCF", param = list(k = 3)),
-                  "item-based CF (k=5)" = list(name = "IBCF", param = list(k = 5)),
-                  "item-based CF (k=10)" = list(name = "IBCF", param = list(k = 10)),
-                  "item-based CF (k=20)" = list(name = "IBCF", param = list(k = 20)))
+algorithms <- list("random items" = list(name = "RANDOM", param = NULL),
+                   "popular items" = list(name = "POPULAR", param = NULL),
+                   "association rules (0.01)" = list(name = "AR", param = list(support = 0.01)),
+                   "association rules (0.05)" = list(name = "AR", param = list(support = 0.05)),
+                   "association rules (0.1)" = list(name = "AR", param = list(support = 0.1)))
+                  #"item-based CF (k=3)" = list(name = "IBCF", param = list(k = 3)),
+                  #"item-based CF (k=5)" = list(name = "IBCF", param = list(k = 5)),
+                  #"item-based CF (k=10)" = list(name = "IBCF", param = list(k = 10)),
+                  #"item-based CF (k=20)" = list(name = "IBCF", param = list(k = 20)),
+                  #"item-based CF (k=30)" = list(name = "IBCF", param = list(k = 30)),
+                  #"item-based CF (k=40)" = list(name = "IBCF", param = list(k = 40)),
+                  #"item-based CF (k=50)" = list(name = "IBCF", param = list(k = 50)))
                    #"user-based CF (Jaccard)" = list(name = "UBCF", param = list(nn = 50, method = 'jaccard')))
                    #"user-based CF (Pearson)" = list(name = "UBCF", param = list(nn = 50, method = 'pearson')))
 
 Recipes_binary <- as(Recipes, 'binaryRatingMatrix')
+Recipes_binary <- Recipes_binary[rowCounts(Recipes_binary) > 5]
 
 scheme <- evaluationScheme(Recipes_binary, method="split", train=.9, k=1, given=-1, progress)
 

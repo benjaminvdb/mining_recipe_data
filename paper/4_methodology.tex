@@ -112,6 +112,7 @@ These patterns are then searched for the user's rated item, after which a recomm
 
 
 \subsubsection{User-based Collaboration Filtering}
+\label{subsubsec:user_based_cf}
 
 User-based collaboration filtering computes missing user ratings by assuming that users with a similar preference, their \emph{peers}, will give ratings similar to their peers to unseen items.
 The database is searched for users that are similar, called the \emph{neighborhood}, with respect to some distance metric and their ratings are aggregated, for example by taking the mean the neighborhood.
@@ -147,3 +148,33 @@ For this, we first define four functions:
 \end{equation}
 
 This shows that the Jaccard similarity can be computed from the rating matrix itself.
+
+Another similarity measure is the \emph{Pearson correlation coefficient}.
+
+\begin{equation}
+	\mathrm{sim}_{\mathrm{Pearson}}=\frac{\sum_{i \in I}(\bm{x}_{i}\bm{x})(\bm{y}_{i}\bm{y})}{(|I|-1)\mathrm{sd}(\bm{x})\mathrm{sd}(\bm{y})}
+\end{equation}
+
+It measures the linear correlation between two vectors of equal length, with a value in $[-1,1]$ where $-1$ denotes a total negative correlation and $1$ denotes total positive correlation.
+We use this similarity measure for real-valued rating matrices.
+
+In order to compute the neighborhood of a given user, the entire similarity matrix $S$($n \times n$) has to be computed first, which can be a limiting factor for this approach if the number of users is very large.
+The user ratings are normalized by mean-centering the data (see \cref{subsubsec:user_ratings}.
+Once the similarity matrix has been computed, the users most similar to the active user $u_a$ are extracted by selecting a group of fixed size $k$, the $k$-neighborhood $\mathcal{N}_{k}$.
+The rating for an item by a user is computed by averaging the rating for this item in the neighborhood:
+
+\begin{equation}
+	r_{aj}=\frac{1}{|\mathcal{N}_{k}(a)|}\sum_{i\in\mathcal{N}(a)}r_{ij}
+\end{equation}
+
+
+
+%------------------------------------------------------------
+
+
+\subsubsection{Item-based Collaboration Filtering}
+\label{subsubsec:item_based_cf}
+
+Item-based collaboration filtering is in many ways similar to user-based collaboration filtering.
+This difference is that instead of computing ratings based on how similar users rated the item, the computed rating is based on ratings the user has given to similar items.
+The idea is that users who 
