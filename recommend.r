@@ -12,27 +12,7 @@ suppressPackageStartupMessages(library("recommenderlab"))
 suppressPackageStartupMessages(library("data.table"))
 suppressPackageStartupMessages(library("futile.logger"))
 
-# Select matrix with given properties
-selectRows <- function(data, min_users, min_ratings) {
-  data <- data[rowCounts(data) >= min_users,]
-  data <- data[,colSums(data) >= min_ratings]
-  data 
-}
-
-# Load data
-loadData <- function(filename) {
-  data = data.table::fread(filename, sep = ',', header = FALSE, encoding = 'UTF-8', 
-                           showProgress = TRUE)
-  colnames(data) <- c('recipe_id', 'user_id', 'rating', 'date')
-  tuples <- subset(data, select = c('user_id', 'recipe_id', 'rating'))
-  tuples <- tuples[
-    !duplicated( # Get the non-duplicated rows
-      subset(tuples, select = c('user_id', 'recipe_id'))  # One user, one rating
-    )
-  ]
-  r <- as(tuples, 'realRatingMatrix')
-  r
-}
+source("utils.r")
 
 if (!interactive()) {
   # create parser object
@@ -55,7 +35,7 @@ flog.info("Loading rating data from input...")
 
 RecipeRatings <- loadData(args$input)
 RecipeRatings <- selectRows(RecipeRatings, args$min_users, args$min_recipes)
-RecipeRatings <- RecipeRatings[1:args$size]
+#RecipeRatings <- RecipeRatings[1:args$size]
 
 flog.info("Finished loading rating data.")
 
@@ -64,12 +44,12 @@ dim(RecipeRatings)
 # Algorithms to use
 algorithms <- list("random items" = list(name = "RANDOM", param = NULL),
                    "popular items" = list(name = "POPULAR", param = NULL),
-                   "user-based CF (Jaccard, nn = 10)" = list(name = "UBCF", param = list(nn = 10, method = 'jaccard')),
-                   "user-based CF (Jaccard, nn = 20)" = list(name = "UBCF", param = list(nn = 20, method = 'jaccard')),
-                   "user-based CF (Jaccard, nn = 30)" = list(name = "UBCF", param = list(nn = 30, method = 'jaccard')),
-                   "user-based CF (Pearson, nn = 10)" = list(name = "UBCF", param = list(nn = 10, method = 'pearson')),
-                   "user-based CF (Pearson, nn = 20)" = list(name = "UBCF", param = list(nn = 20, method = 'pearson')),
-                   "user-based CF (Pearson, nn = 30)" = list(name = "UBCF", param = list(nn = 30, method = 'pearson')))
+                   "item-based CF (Jaccard, nn = 10)" = list(name = "IBCF", param = list(nn = 10, method = 'jaccard')),
+                   "item-based CF (Jaccard, nn = 20)" = list(name = "IBCF", param = list(nn = 20, method = 'jaccard')),
+                   "item-based CF (Jaccard, nn = 30)" = list(name = "IBCF", param = list(nn = 30, method = 'jaccard')),
+                   "item-based CF (Pearson, nn = 10)" = list(name = "IBCF", param = list(nn = 10, method = 'pearson')),
+                   "item-based CF (Pearson, nn = 20)" = list(name = "IBCF", param = list(nn = 20, method = 'pearson')),
+                   "item-based CF (Pearson, nn = 30)" = list(name = "IBCF", param = list(nn = 30, method = 'pearson')))
 
 scheme <- evaluationScheme(RecipeRatings, method="split", train = .9,
                            k = 1, given = -5, goodRating = 5)
