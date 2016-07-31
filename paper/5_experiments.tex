@@ -67,10 +67,23 @@ This result shows that the ingredients used in these meals are more predictable,
 %============================================================
 
 
-\subsection{Collaborative Filtering}
+\subsection{Predicting Ratings using UCBF}
 \label{subsec:collaborative_filtering}
 
-In this section we look at how the user rating data can be used to build a recommender system that is able to suggest new recipes to users.
+In this section we look at how the user rating data can be used to build a user-based recommender system that is able to predict user ratings for unseen recipes.
 As described in \cref{subsubsec:user_ratings}, the dataset derived from Allrecipes consists of over $3$ million user ratings from $1$ to $5$ stars.
-The rating matrix is very sparse, but we might be able to complete the matrix using well-known collaborative filtering techniques.
-In order to achieve this, the 
+The rating matrix is very sparse and the objective is to complete the matrix using the collaborative filtering techniques described in \cref{subsec:collaborative_filtering}.
+First, only a part of the rating matrix was selected for modeling by setting a minimum of $10$ ratings per user and $10$ ratings per recipe, resulting in a $\num{53569} \times \num{49463}$ matrix of $\num{1904960}$ ratings.
+Eight different models were built on $\SI{90}{\percent}$ of the data, using $\SI{10}{\percent}$ for evaluation.
+Per user, the recipe ratings to be left out were selected using a Given-$5$ schema, meaning that $5$ ratings were randomly selected and used in the training while the remaining ones ($\geq 5$) are to be predicted.
+Parameter settings for the UCBF system are the distance metric and the size of the user neighborhood $k$.
+The metrics used are Jaccard similarity and the Pearson correlation coefficient \cref{subsubsec:user_based_cf}.
+The neighborhood sizes were chosen to be $10$, $20$ and $30$, resulting in $6$ different models, built on the same training data.
+
+Two additional models were added for comparison to these more sophisticated models: a random recommender and global popularity model.
+The random recommender takes random items from the `model', which is just the training set itself.
+It then averages their ratings of these items in order to predict ratings.
+This recommender is used because of the rating bias discussed in \cref{subsubsec:user_ratings}.
+It sets the upper error boundary if at least some knowledge about the rating behavior is known, as its predictions are based on the global distribution of ratings.
+The other baseline model bases its recommendations on the popularity of items by counting how often items are rated.
+Its ratings predictions, however, are computed by taking the average ratings of items, disregarding items known by the active user and neglecting missing values.

@@ -2,7 +2,7 @@
 
 \usepackage[utf8]{inputenc}                                         % Use UTF-8 encoding
 \usepackage[T1]{fontenc}
-\usepackage{textcomp}
+\usepackage{textcomp}  % Includes registered trademark symbol
 \usepackage{lmodern}
 %\usepackage[bitstream-charter]{mathdesign}
 %\usepackage{libertine}
@@ -35,7 +35,9 @@
 \usepackage{pdfpages}                                               % Include complete PDFs
 \usepackage{alltt}                                                  % Inline verbatim text
 \usepackage{ifdraft}                                                % Conditionals for 'draft' and 'final'
-\usepackage[numbers, comma, sort&compress]{natbib}
+%\usepackage[numbers, comma, sort&compress]{natbib}
+\usepackage[style=numeric,backend=biber,natbib]{biblatex}
+
 \usepackage{titling}                                                % Allows accessing set author, title, etc.
 \newcommand*\rot{\rotatebox{90}}
 \usepackage{multirow}                                               % Multi-row table cells

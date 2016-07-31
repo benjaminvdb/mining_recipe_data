@@ -28,14 +28,14 @@ if (!interactive()) {
   args = list(input = '/Users/benny/Repositories/recipes/data/reviews.csv',
               min_users = 10,
               min_recipes = 10,
-              size = 1000)
+              size = 100)
 }
 
 flog.info("Loading rating data from input...")
 
 RecipeRatings <- loadData(args$input)
 RecipeRatings <- selectRows(RecipeRatings, args$min_users, args$min_recipes)
-#RecipeRatings <- RecipeRatings[1:args$size]
+RecipeRatings <- RecipeRatings[1:args$size]
 
 flog.info("Finished loading rating data.")
 

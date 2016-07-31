@@ -175,6 +175,47 @@ The rating for an item by a user is computed by averaging the rating for this it
 \subsubsection{Item-based Collaboration Filtering}
 \label{subsubsec:item_based_cf}
 
-Item-based collaboration filtering is in many ways similar to user-based collaboration filtering.
+Item-based collaboration filtering \citep{Sarwar2001} is in many ways similar to user-based collaboration filtering.
 This difference is that instead of computing ratings based on how similar users rated the item, the computed rating is based on ratings the user has given to similar items.
-The idea is that users who 
+As an example we might consider a group of meals that are similar with respect to their ingredients, such as `Italian pastas with tomato sauce'.
+Even though the ingredients of the recipes are unknown to the recommender system, users have often given similar ratings to items within this group, revealing item similarity through the preferences of the user group.
+In order to decide which items are similar to one another, the similarity matrix $S$ ($m \times m$) is first computed.
+Since the approach is essentially a $k$-nearest neighbor model applied to the columns, instead of the rows, of the rating matrix, only a pre-specified $k$ number of most similar items are stored in the model, meaning that $S$ can be a sparse matrix.
+This greatly reduces the size of the model, improving the space and time complexity, be it at the cost of at the potential sacrifice of the system \citep{Sarwar2001}.
+The same similarity metrics that apply to user-based collaborative filtering can also be used in this case, e.g. the Pearson correlation coefficient and the Jaccard similarity.
+The latter assumes a binary rating matrix in which unrated items are assumed to be $0$.
+Similar to user-based collaboration filtering, the set $\mathcal{S}(i)$ denotes the set with items similar to item $m_i$.
+Let $\mathcal{R}(a)=\{l \mid r_{al} \neq {?}\}$ be the set of items that the active user did rate.
+One way of predicting the rating of item $m_i$ is to take the average of the items that are similar to it and were rated by the user, i.e., to take the mean of ratings by $u_a$ to items in $\mathcal{S}(i) \cap \mathcal{R}(a)$.
+
+\begin{equation}
+	r_{ai}=\frac{1}{\sum_{j\in{\mathcal{S}(i)\cap \mathcal{R}(a)}}s_{ij}}\sum_{j\in{\mathcal{S}(i)\cap \mathcal{R}(a)}}s_{ij}r_{aj}
+\end{equation}
+
+
+%------------------------------------------------------------
+
+
+\subsubsection{Association Rule-based Recommendation for Binary Data}
+\label{subsubsec:association_recommendation}
+
+If the rating matrix is a binary matrix, the rows and columns can be seen as sets.
+The ratings can be thresholded in order to obtain a matrix in which a $1$ indicates that a user is likes a certain item.
+Viewed in this way, association rule mining can be applied to this matrix to create a dependency model of items.
+These items can be recipes in the case of a binarized rating matrix \emph{users} $\times$ \emph{recipes}, or ingredients, in the case of a \emph{recipe} $\times$ \emph{ingredient} matrix.
+In both cases, the rating matrix is taken as input to the Apriori algorithm (\cref{alg:apriori}), treating the rows of the matrix as transactions, along with chosen support and confidence thresholds.
+The itemset size is also limited in order to reduce the computational complexity of the recommendation step.
+The result is a set of association rules $\mathcal{A}$.
+
+To recommend an item to the active user $u_a$ a set of association rules $A \in \mathcal{A}$ is first searched for that have a precedent in the itemset $\mathcal{T}_a$ (the transaction) of the active user and a single-item antecedent, i.e., $A = \{X \rightarrow Y \mid X \subseteq \mathcal{T}_a, |\mathcal{Y}|=1\}$.
+These rules are sorted according to an interestingness measure, such as confidence after which the top-$N$ elements are recommended.
+
+
+%============================================================
+
+
+\subsection{Evaluation}
+\label{subsec:evaluation}
+
+The prediction of ratings can be seen as a regression problem, while the prediction of missing ingredients is in the area of information retrieval.
+These different tasks need different evaluation methods, which are described here.

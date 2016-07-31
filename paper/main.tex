@@ -20,12 +20,16 @@
 %%% Style
 \usepackage{mystyle}
 
+% Bibliography
+\addbibresource{mybib.bib}
+
+
 %%% Author
 \author{Benjamin van der Burgh}
 \degreeyear{2015}
 
 %%% Modular includes
-\includeonly{4_methodology}
+%\includeonly{5_experiments}
 
 
 % % % % % % % % % % % % % % % % % % % % % %
@@ -39,12 +43,11 @@
 \include*{2_related_work}
 \include*{3_dataset}
 \include*{4_methodology}
-\include*{5_data_mining}
+\include*{5_experiments}
 \include*{6_conclusions}
 
 
 % Bibliography
-\bibliographystyle{plainnat}
-\bibliography{mybib}
+\printbibliography
 
 \end{document}
