@@ -1,6 +1,5 @@
 # Project-specific
 data/*
-*.csv
 *.pkl
 *.npz
 *.RData
