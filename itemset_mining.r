@@ -6,10 +6,8 @@ base_dir = '/Users/benny/Repositories/recipes/paper'
 tables_dir = file.path(base_dir, 'tables')
 plots_dir = file.path(base_dir, 'plots')
 
-saveTikz <- function(plt, filename) {
-  phi <- 1.618
-  width <- 4.9823
-  height <- width/phi
+saveTikz <- function(plt, filename, width = 4.9823, ratio = 1.618) {
+  height <- width/ratio
   filename <- file.path(plots_dir, filename)
   tikz(file = filename, width = width, height = height)
   replayPlot(plt)
@@ -247,3 +245,14 @@ scheme <- evaluationScheme(Recipes_binary, method="split", train=.9, k=1, given=
 
 results2 <- evaluate(scheme, algorithms, progress = TRUE,
                     type = "topNList", n=c(1,3,5,10))
+
+
+nms <- c('Random items', 'Popular items', 'AR s=0.01',
+         'AR s=0.05', 'AR s=0.1', 'IBCF k=20', 'IBCF k=40',
+         'IBCF k=200')
+names(results2) <- nms
+
+plot(results2, annotate=c(1,3,7))
+title('ROC curve for ingredient recommendation')
+plt <- recordPlot()
+saveTikz(plt, 'ingredients_recommendations_given2.tex')

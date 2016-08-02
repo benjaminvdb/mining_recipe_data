@@ -1,10 +1,9 @@
-\section{Data Mining}
-\label{sec:data_mining}
+\section{Experiments}
+\label{sec:experiments}
 
-This section describes the experiments that were performed on the datasets to obtain a better understanding of what makes a good recipe.
-First, the itemsets of ingredients are mined for general patterns using association rule mining.
-After that, the dataset is divided into two clusters, a positive and negative dataset, using the rating dataset.
-A decision tree model is then used to learn a decision boundary between these two clusters, which is then analyzed in detail.
+This section describes the experiments that were performed, using the \emph{R} statistical analysis tool \citep{R2016}, on the datasets to obtain a better understanding of what makes a good recipe.
+First, the itemsets of ingredients are mined for general patterns using the association rule mining capabilities of the \emph{arules} R package \citep{Hahsler2007}.
+Secondly, a recommender system was built using the \emph{recommenderlab} \citep{Hahsler2011} R package, based the user rating data.
 
 
 %============================================================
@@ -13,8 +12,18 @@ A decision tree model is then used to learn a decision boundary between these tw
 \subsection{Association Rule Mining}
 \label{subsec:association_rule_mining}
 
+
+%\begin{figure}[htbp]
+%	\centering
+%
+%	\includegraphics[width=\textwidth]{plots/ingredient_rules_graph}
+%	
+%	\caption{This network of association rules shows there are two highly connected groups of ingredients, connected to each other by common ingredients, such as salt and water.}
+%	\label{fig:ingredient_rules_graph}
+%\end{figure}
+
 This section covers the analysis of the ingredient dataset using association rule mining.
-Using the apriori algorithm, we mine the dataset for association rules with a confidence of $0.5$ and a coverage of $0.02$, resulting in a set of $1003$ association rules.
+Using the Apriori algorithm \citep{Agrawal1993}, we mine the dataset for association rules with a confidence $\geq 0.5$ and a coverage $\geq 0.02$, resulting in a set of $1003$ association rules.
 \cref{tab:rules_top10} shows the association rules that have the highest lift.
 They describe patterns commonly found in sweet, oven-baked dishes, such as cookies and pies.
 Nutmeg and cinnamon are often used in combination with clover in cookie mixes (e.g. in `speculaas'), so it is not strange to find the pattern \{nutmeg\} $\rightarrow$ \{cinnamon\}.
@@ -24,6 +33,11 @@ Looking more closely at the recipes, this does not seem the case, however, as de
 Many recipes include ingredients such as pepper, onions and cheese, which are normally not used in deserts.
 This result shows that the ingredients used in these meals are more predictable, in that they are often used in a similar way.
 
+\cref{fig:rules_scatter} shows a scatter plot of the found association rules in three dimensions of interestingness: support, confidence and lift.
+It can be seen that many of the rules have a low support value, with only few elements appearing many times.
+Unfortunately, the rules that have a high lift value have a relatively low confidence value.
+This means that some rules were found for which the consequent has a much higher support than would be expected from the antecedent alone.
+However, the cases in which these rules hold are limited, making them less interesting.
 
 \begin{table}[htbp]
 	\caption{Top 10 of association rules ordered by lift.}
@@ -50,24 +64,19 @@ This result shows that the ingredients used in these meals are more predictable,
 \end{table}
 
 \begin{figure}[htbp]
-	\input{plots/rules_scatter}	
-\end{figure}
-
-
-\begin{figure}[htbp]
 	\centering
 
-	\includegraphics[width=\textwidth]{plots/ingredient_rules_graph}
+	\input{plots/rules_scatter}
 	
-	\caption{This network of association rules shows there are two highly connected groups of ingredients, connected to each other by common ingredients, such as salt and water.}
-	\label{fig:ingredient_rules_graph}
+	\caption{The association rules with a relatively high lift are most interesting, but they have low support in this dataset. On the other hand, rules with a high confidence are quite abundant.}
+	\label{fig:rules_scatter}
 \end{figure}
 
 
 %============================================================
 
 
-\subsection{Predicting Ratings using UCBF}
+\subsection{Rating Prediction using UCBF}
 \label{subsec:collaborative_filtering}
 
 In this section we look at how the user rating data can be used to build a user-based recommender system that is able to predict user ratings for unseen recipes.
@@ -77,7 +86,7 @@ First, only a part of the rating matrix was selected for modeling by setting a m
 Eight different models were built on $\SI{90}{\percent}$ of the data, using $\SI{10}{\percent}$ for evaluation.
 Per user, the recipe ratings to be left out were selected using a Given-$5$ schema, meaning that $5$ ratings were randomly selected and used in the training while the remaining ones ($\geq 5$) are to be predicted.
 Parameter settings for the UCBF system are the distance metric and the size of the user neighborhood $k$.
-The metrics used are Jaccard similarity and the Pearson correlation coefficient \cref{subsubsec:user_based_cf}.
+The similarity metrics used are Jaccard similarity and the Pearson correlation coefficient (see \cref{subsubsec:user_based_cf}).
 The neighborhood sizes were chosen to be $10$, $20$ and $30$, resulting in $6$ different models, built on the same training data.
 
 Two additional models were added for comparison to these more sophisticated models: a random recommender and global popularity model.
@@ -86,4 +95,90 @@ It then averages their ratings of these items in order to predict ratings.
 This recommender is used because of the rating bias discussed in \cref{subsubsec:user_ratings}.
 It sets the upper error boundary if at least some knowledge about the rating behavior is known, as its predictions are based on the global distribution of ratings.
 The other baseline model bases its recommendations on the popularity of items by counting how often items are rated.
-Its ratings predictions, however, are computed by taking the average ratings of items, disregarding items known by the active user and neglecting missing values.
+Its rating predictions, however, are computed by taking the average ratings of items, disregarding items known by the active user and omitting missing values.
+The prediction error is defined as the difference between the predicted rating $\hat{r_{ij}}$ and actual rating $r_{ij}$, i.e., $e_{ij}=\hat{r_{ij}}-r_{ij}$.
+The models are compared using three risk functions: \emph{mean absolute error} (MAE), \emph{mean squared error} and \emph{root-mean-square error}.
+
+\begin{equation}
+	\textrm{MAE}=\frac{1}{n \cdot m}\sum_{i=1}^{n}\sum_{j=1}^{m}|e_{ij}|	
+\end{equation}
+
+\begin{equation}
+	\textrm{MSE}=\frac{1}{n \cdot m}\sum_{i=1}^{n}\sum_{j=1}^{m}(e_{ij})^2
+\end{equation}
+
+\begin{equation}
+	\mathrm{RMSE}= \sqrt{\mathrm{MSE}} = \sqrt{\frac{\sum_{i=1}^{n}\sum_{j=1}^{m}(e_{ij})^{2}}{n \cdot m}}
+\end{equation}
+
+\begin{figure}[htbp]
+	\centering
+
+	\input{plots/ratings_prediction_error}
+	
+	\caption{The produced models have almost almost the same prediction errors with no significant difference. The model names are follows by an abbreviation of the similarity metric used (J for Jaccard and P for Pearson correlation coefficient) and the neighborhood size $k$.}
+	\label{fig:ratings_prediction_error}
+\end{figure}
+
+\cref{fig:ratings_prediction_error} shows the prediction errors of the produced models.
+Apart from the random item model, the other models have similar performances.
+No model scores best on all three error functions, so the best model is decided on the preferred error function, although the difference is not significant.
+The models perform reasonably well, with a mean absolute error of about $0.6$, compared to $0.7$ for the random item model.
+
+
+%============================================================
+
+
+\subsection{Recipe Completion}
+\label{subsec:recipe_completion}
+
+We now look how recommender systems can suggest ingredients to complete a recipe.
+Here we compare item-based collaboration filtering (see \cref{subsubsec:user_based_cf}) and association rule-based recommendation (see \cref{subsubsec:association_recommendation}), along with two baseline models.
+For the association rule-based models, the confidence is used as a measure of interestingness and the support threshold is varied.
+A lower support threshold results in less association rules being pruned, resulting in a larger amount of association rules and increasing the space complexity of the model and the time complexity of making predictions.
+By varying the threshold, we can study the impact of this trade-off.
+A Given-$2$ evaluation scheme is used, meaning that for each recipe $2$ ingredients are given and the other recipes are to be retrieved.
+Only recipes with at least five ingredients are selected, resulting in a $\num{71184} \times 403$ matrix with $\num{636654}$ ones.
+Again, $\SI{90}{\percent}$ of the data is used for training and $\SI{10}{\percent}$ is held back for testing.
+Predictions consist of a four top-$N$ rankings, where $N=\{1,3,5,10\}$.
+The ingredients to be predicted are the ones not given during training, which is a set of variable size, i.e., these ingredients have no specific ordering.
+
+\begin{description}
+	\item [True Positive] Item appears in the ranking and is indeed part of the recipe.
+	\item [False Positive] Item appears in the ranking, but is not a part of the recipe.
+	\item [True Negative] Item does not appear in the ranking and is indeed not part of the recipe.
+	\item [False Negative] Item does not appear in the ranking, but it is actually part of the recipe.	
+\end{description}
+
+\begin{definition}[Precision]
+    Precision, $E_{p}$, is the fraction of pairs that are correctly classified as true matches, i.e.,
+    \begin{equation*}
+        E_{p} = \frac{ \abs{\text{TP}} }{ \abs{\text{TP}} + \abs{\text{FP}} }
+    \end{equation*}
+\end{definition}
+
+\begin{definition}[Recall]
+    Recall, $E_{r}$, is the fraction of true matches that are detected by the system, i.e.,
+    \begin{equation*}
+        E_{r} = \frac{ \abs{\text{TP}} }{ \abs{\text{TP}} + \abs{\text{FN}} }
+    \end{equation*}
+\end{definition}
+
+
+\begin{figure}[htbp]
+	\centering
+
+	\input{plots/ingredients_recommendations_pr}
+	
+	\caption{The two more sophisticated models, based on association rules (AR) and item-based collaboration filtering (IBCF),  outperform the baseline random and popularity based models. A lower support threshold results in a larger model and a better performance of the AR model. The IBCF model performs better with a large neighborhood; the setting $k=200$ uses a similar item group as big as half the number of known ingredients.}
+	\label{fig:ingredients_recommendations_pr}
+\end{figure}
+
+The method are evaluated by means of a \emph{Precision-Recall plot}, which helps in quantifying a model's ability in retrieving correct elements (recall) and the ratio of correct to incorrect elements (precision).
+From the plot shown in \cref{fig:ingredients_recommendations_pr} it can be seen that the item-based collaborative filtering techniques with large item similarity group sizes ($k \geq 40$) perform the best.
+The item-based method performs surprisingly well considering that for $k=200$, a group half the size of the ingredient database is used.
+The association rule-based method performs well for low support thresholds.
+This is due to the fact that results in a larger model, i.e., more association rules.
+It seems that the created models are not suitable for true recipe completion, because the precision and recall are not high enough for that.
+However, the results are good enough that a top-$10$ ranking could serve as inspiration for the cook.
+On the other hand, the simplistic popularity-based model is probably good enough to do that as well and its time complexity for both modelling and prediction are much smaller.

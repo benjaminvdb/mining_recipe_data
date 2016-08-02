@@ -30,6 +30,12 @@ hist(getRatings(normalize(r, method="Z-score")), breaks=100)
 hist(rowCounts(r), breaks=50)
 hist(colMeans(r), breaks=20)
 
+qplot(getRatings(normalize(RecipeRatings)), bins = 40) +
+  labs(title = 'Distribution of normalized ratings',
+       x = 'Normalized rating',
+       y = 'Count') +
+  theme(plot.title = element_text(size=12))
+
 # dataType is probably only realRatingMatrix or binaryRatingMatrix
 recommenderRegistry$get_entries(dataType = "realRatingMatrix")
 
@@ -195,6 +201,12 @@ num_ratings_bigger <- function(val) {
   sum(rowSums(r_b) > val)
 }
 
+
+num_ratings_smaller <- function(val) {
+  sum(rowCounts(RecipeRatings) <= val)
+}
+
+
 ratings <- seq(100, 2000, by=100)
 users <- pbsapply(ratings, num_ratings_bigger)
 df <- data.frame(ratings, users)
@@ -261,3 +273,9 @@ hist(r_m)
 recipes_good <- RecipeRatings[,map[[names(r_m[r_m > 0])]]]
 recipes_bad <- RecipeRatings[,map[[names(r_m[r_m < 0])]]]
 
+
+nms <- c("random items", "popular items", "UBCF J10",
+         "UBCF J20", "UBCF J30", "UBCF P10", "UBCF P20",
+         "UBCF P30")
+
+names(results) <- nms

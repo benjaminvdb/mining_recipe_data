@@ -36,7 +36,11 @@
 \usepackage{alltt}                                                  % Inline verbatim text
 \usepackage{ifdraft}                                                % Conditionals for 'draft' and 'final'
 %\usepackage[numbers, comma, sort&compress]{natbib}
-\usepackage[style=numeric,backend=biber,natbib]{biblatex}
+\usepackage[style=numeric,backend=biber,natbib,doi=false,isbn=false,url=false]{biblatex}
+
+% Remove month and day from citations
+\AtEveryBibitem{\clearfield{month}}
+\AtEveryBibitem{\clearfield{day}}
 
 \usepackage{titling}                                                % Allows accessing set author, title, etc.
 \newcommand*\rot{\rotatebox{90}}
@@ -153,8 +157,8 @@
 
 %%% Definition environment
 \newtheoremstyle{break}% name
-  {}%         Space above, empty = `usual value'
-  {}%         Space below
+  {\topsep}%         Space above, empty = `usual value'
+  {\topsep}%         Space below
   {\normalfont}% Body font
   {}%         Indent amount (empty = no indent, \parindent = para indent)
   {\bfseries}% Thm head font

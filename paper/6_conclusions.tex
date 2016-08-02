@@ -1,4 +1,12 @@
 \section{Conclusions}
 \label{sec:conclusions}
 
-Lala
+For this research, a large dataset of tens of thousands of recipes and millions of ratings was extracted from a social networking website.
+The ingredients were then standardized and joined with another dataset, resulting in one of the largest publicly available\footnote{The recipe ingredient and rating datasets are freely available, along with the used Python scripts and \latex source of this paper, at \url{https://github.com/benjaminvdb/recipes}.} datasets on the web.
+Enriching the data with chemical informations opens up the possibility of studying recipes from another perspective, though this has not been pursued in this study and was left for future work.
+Two different experiments were conducted on the data.
+First, a recommender system was built on the rating data using several different approaches.
+Even though these models were able to predict user ratings within a reasonable error range, the more complex models -- based on user-based collaboration filtering -- did not perform significantly better than the naive baseline model.
+Secondly, association rule mining and item-based collaboration filtering were tried as methods to complete recipes when two ingredients were given.
+In this case, the more complex models did perform better than the naive baseline models, but the system needs to be improved a lot before it can be used in a real scenario.
+Even though these models were able to retrieve some of the relevant ingredients, the quality of the results indicate that we were not able to find major patterns in the composition of recipes.

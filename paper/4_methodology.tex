@@ -2,7 +2,8 @@
 \label{sec:methodology}
 
 This section explains the methods and techniques used in the analysis of the datasets.
-The two datasets, the ingredient itemsets and user ratings, have different nature and it requires different tools to analyze them.
+The two datasets, the ingredient itemsets and user ratings, contain different types of data.
+Therefore, different techniques are required in order to analyze them.
 Looking at the ingredient itemsets, here we are particularly interested in combinations of ingredients that frequently occur in the data.
 The rating data can be seen as a sample of a much larger dataset that contains preferences of a set of people towards a set of recipes.
 Most of the ratings are however unknown and the main objective here is to approximate these ratings such that they can be studied in relation to the ingredient sets.
@@ -14,9 +15,9 @@ Most of the ratings are however unknown and the main objective here is to approx
 \subsection{Frequent Itemsets and Association Rules}
 \label{subsec:frequent_itemsets}
 
-The ingredient itemsets can be studied using techniques from \emph{Association Rule Mining}, that mine patterns consisting of frequently occurring set of items, called \emph{association rule mining} \citep{Agrawal1993}.
-This is method that was originally used to mine shopping baskets for frequently occurring patterns, which can be used for e.g. product placement in stores and marketing purposes.
-It the problem is formally defined as:
+The ingredient itemsets can be studied using techniques from \emph{Association Rule Mining}, which creates a depedency model from discrete data \citep{Agrawal1993}.
+It was originally used to mine shopping baskets for frequently occurring patterns, information that can be used for product placement in stores and other marketing purposes.
+The problem is formally defined as:
 
 \begin{definition}[Association Rule Mining]
 	Let $I = \{i_1, i_2, \dots, i_n\}$ be a set of $n$ binary attributes called items. Each transaction in $\mathcal{D}=\{t_1, t_2, \dots, t_m$ be a set of transaction called the \emph{database}. Each transaction in $\mathcal{D}$ has a unique transaction ID and contains a subset of the item in $I$. A \emph{rule} is defined as an implication of the form $X \rightarrow Y$ where $X,Y \subseteq I$ and $X \cap Y=\empty$. The sets of item (for short \emph{itemsets}) $X$ and $Y$ are called \emph{antecedent} (left-hand-side or LHS) and \emph{consequent} (right-hand-side or RHS) of the rule.
@@ -62,10 +63,10 @@ This allows us to mine only the \emph{maximal informative itemsets}, since their
 	A \emph{maximal frequent itemset} $X$ is a frequent itemset that is not a proper subset of another frequent itemset.
 \end{definition}
 
-There exist a number of association rule mining algorithms, but for this research, the Apriori algorithm will be used.
+There exist a number of association rule mining algorithms, but for this research, the Apriori algorithm \citep{Agrawal1993} will be used.
 Apriori utilizes the the fact that all subsets of a frequent itemset are also frequent itemsets.
 The high-level pseudocode of the algorithm is given in \cref{alg:apriori}, with most of the details left out, which can be found in the work of \cite{Agrawal1993}.
-The algorithm uses a bottom-up approach that constructs larger and larger frequent itemsets by combining frequent itemsets found in earlier iteration into a \emph{candidate set} (line $7$) and then testing for the minimal support (line $8$).
+The algorithm uses a bottom-up approach that constructs larger and larger frequent itemsets by combining frequent itemsets found in earlier iterations into a \emph{candidate set} (line $7$) and then testing for the minimal support (line $8$).
 The stopping criterion is that the frequent itemset of the previous round should not be empty, which occurs when no itemsets were found that have a sufficiently high support.
 Computing frequent itemsets can be performed efficiently, because the support for subsets of new candidates have been computed in a previous iteration.
 
@@ -76,6 +77,14 @@ Computing frequent itemsets can be performed efficiently, because the support fo
 \end{algorithm}
 
 Association rules can now be computed from the set of maximal frequent itemsets $F$ by generating from each element all possible rules and computing their individual confidence scores.
+A commonly used measure for interestingness of association rules is \emph{lift}.
+
+\begin{equation}
+	\mathrm{lift}(X \rightarrow Y)=\frac{\mathrm{supp}(X \cup U)}{\mathrm{supp}(X) \times \mathrm{supp}(Y)}
+\end{equation}
+
+It provides a measure of dependence between the precedent and antecedent.
+They are completely independent if $\mathrm{lift}(X \rightarrow Y)=1$, while they are dependent if $\mathrm{lift}(X \rightarrow Y)>1$.
 
 
 %============================================================
@@ -85,7 +94,7 @@ Association rules can now be computed from the set of maximal frequent itemsets 
 \label{subsec:recommender_systems}
 
 The intended purpose of this research is to suggest recipes and ingredients to users.
-A lot of research has been done on \emph{Recommender Systems} that solve this recommendation problem.
+A lot of research has been done on \emph{Recommender Systems} that solve this recommendation problem \citep{Ricci2010}.
 
 \begin{definition}[Recommendation Problem]
 	Given database $\mathcal{D} \in U \times M \times S$ tuples of ratings $s\in S$ that users $u \in U$ have given to items $m \in M$, and an \emph{active user} $u_a \in U$, return a list $(m_1, m_2, \dots, m_N)$ of items not in $\mathcal{D}$.
@@ -103,7 +112,7 @@ The first method fills in these missing values by collecting preferences of many
 This method is also called \emph{Collaborative Filtering} (CF), a general term for a range of series based on the idea of collaboration.
 Several techniques exist of which a few will be used and compared.
 
-For the second method, association rules can be applied, which result in a descriptive way of recommending items.
+For the second method, association rules can be utilized, which result in a descriptive way of recommending items.
 The database is mined for rules in the form of ``if a user likes items $m_p$ and $m_q$ then he/she also likes item $m_r$''.
 These patterns are then searched for the user's rated item, after which a recommendation can be presented.
 
@@ -115,14 +124,14 @@ These patterns are then searched for the user's rated item, after which a recomm
 \label{subsubsec:user_based_cf}
 
 User-based collaboration filtering computes missing user ratings by assuming that users with a similar preference, their \emph{peers}, will give ratings similar to their peers to unseen items.
-The database is searched for users that are similar, called the \emph{neighborhood}, with respect to some distance metric and their ratings are aggregated, for example by taking the mean the neighborhood.
-We will use two distance metrics in this study: the \emph{Jaccard distance} and the \emph{Pearson correlation coefficient}.
+The database is searched for users that are similar, called the \emph{neighborhood}, with respect to some similarity metric and their ratings are aggregated, for example by taking the mean the neighborhood.
+We will use two similarity metrics in this study: the \emph{Jaccard similarity} \citep{Jaccard1912} and the \emph{Pearson correlation coefficient} \citep{Pearson1895}.
 
 \begin{equation}
 	  \mathrm{sim}_{\mathrm{Jaccard}}(A,B) = {{|A \cap B|}\over{|A \cup B|}} = {{|A \cap B|}\over{|A| + |B| - |A \cap B|}}
 \end{equation}
 
-The Jaccard distance operates on itemsets, so in order to apply it to input vectors $\bm{x}$ and $\bm{y}$, these vectors are translated to their binary counterparts $\bm{x}^{*}$ and $\bm{y}^{*}$:
+The Jaccard similarity operates on itemsets, so in order to apply it to input vectors $\bm{x}$ and $\bm{y}$, these vectors are translated to their binary counterparts $\bm{x}^{*}$ and $\bm{y}^{*}$:
 
 \begin{equation}
 	\bm{x}^{*}_{i} =
@@ -132,7 +141,7 @@ The Jaccard distance operates on itemsets, so in order to apply it to input vect
 	\end{cases}
 \end{equation}
 
-The Jaccard distance can then be calculated using this binary presentation instead.
+The Jaccard similarity can then be calculated using this binary presentation instead.
 For this, we first define four functions:
 
 \begin{description}
@@ -159,7 +168,7 @@ It measures the linear correlation between two vectors of equal length, with a v
 We use this similarity measure for real-valued rating matrices.
 
 In order to compute the neighborhood of a given user, the entire similarity matrix $S$($n \times n$) has to be computed first, which can be a limiting factor for this approach if the number of users is very large.
-The user ratings are normalized by mean-centering the data (see \cref{subsubsec:user_ratings}.
+The user ratings are normalized by mean-centering the data (see \cref{subsubsec:user_ratings}).
 Once the similarity matrix has been computed, the users most similar to the active user $u_a$ are extracted by selecting a group of fixed size $k$, the $k$-neighborhood $\mathcal{N}_{k}$.
 The rating for an item by a user is computed by averaging the rating for this item in the neighborhood:
 
@@ -179,13 +188,15 @@ Item-based collaboration filtering \citep{Sarwar2001} is in many ways similar to
 This difference is that instead of computing ratings based on how similar users rated the item, the computed rating is based on ratings the user has given to similar items.
 As an example we might consider a group of meals that are similar with respect to their ingredients, such as `Italian pastas with tomato sauce'.
 Even though the ingredients of the recipes are unknown to the recommender system, users have often given similar ratings to items within this group, revealing item similarity through the preferences of the user group.
+
 In order to decide which items are similar to one another, the similarity matrix $S$ ($m \times m$) is first computed.
 Since the approach is essentially a $k$-nearest neighbor model applied to the columns, instead of the rows, of the rating matrix, only a pre-specified $k$ number of most similar items are stored in the model, meaning that $S$ can be a sparse matrix.
 This greatly reduces the size of the model, improving the space and time complexity, be it at the cost of at the potential sacrifice of the system \citep{Sarwar2001}.
+
 The same similarity metrics that apply to user-based collaborative filtering can also be used in this case, e.g. the Pearson correlation coefficient and the Jaccard similarity.
 The latter assumes a binary rating matrix in which unrated items are assumed to be $0$.
 Similar to user-based collaboration filtering, the set $\mathcal{S}(i)$ denotes the set with items similar to item $m_i$.
-Let $\mathcal{R}(a)=\{l \mid r_{al} \neq {?}\}$ be the set of items that the active user did rate.
+Let $\mathcal{R}(a)=\{l \mid r_{al} \neq {?}\}$ be the set of items that the active user has rated.
 One way of predicting the rating of item $m_i$ is to take the average of the items that are similar to it and were rated by the user, i.e., to take the mean of ratings by $u_a$ to items in $\mathcal{S}(i) \cap \mathcal{R}(a)$.
 
 \begin{equation}
@@ -208,14 +219,4 @@ The itemset size is also limited in order to reduce the computational complexity
 The result is a set of association rules $\mathcal{A}$.
 
 To recommend an item to the active user $u_a$ a set of association rules $A \in \mathcal{A}$ is first searched for that have a precedent in the itemset $\mathcal{T}_a$ (the transaction) of the active user and a single-item antecedent, i.e., $A = \{X \rightarrow Y \mid X \subseteq \mathcal{T}_a, |\mathcal{Y}|=1\}$.
-These rules are sorted according to an interestingness measure, such as confidence after which the top-$N$ elements are recommended.
-
-
-%============================================================
-
-
-\subsection{Evaluation}
-\label{subsec:evaluation}
-
-The prediction of ratings can be seen as a regression problem, while the prediction of missing ingredients is in the area of information retrieval.
-These different tasks need different evaluation methods, which are described here.
+These rules are sorted according to an interestingness measure, such as confidence, after which the top-$N$ elements are recommended.

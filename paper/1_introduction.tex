@@ -3,25 +3,23 @@
 
 In many ways, the kitchen can be seen as the world's oldest laboratory.
 People have experimented with a large number of ingredients, their complex interplay and preparation methods ever since we started using tools.
-With the advent of Web 2.0 and its focus on user-generated content and social media, a lot of data about cooking is now available.
-On websites such as Allrecipes and Food Network, users can submit their own recipes and rate recipes of other users.
+With the advent of Web 2.0 and its focus on user-generated content and social networking, a lot of data about cooking is now available.
+On websites such as Allrecipes \citep{Allrecipes} and Food Network \citep{FoodNetwork}, users can submit their own recipes and rate recipes of other users.
 Instead of browsing through cookbooks, food lovers can now discover new recipes by limiting themselves to a specific category, such as `Christmas' or `Quick \& Easy', or by following other users on the platform.
 
 While these are interesting developments for cooks, it also allows us to study the recipes in much greater detail.
-Traditionally, clustering and classification methods have been used to identify consumer patterns, while more recently, matrix factorization methods have been applied.
-It is often assumed that if a recipe can be found with a certain pairing of ingredients, this pairing must be generally favorable.
+Traditionally, clustering and classification methods have been used to identify consumer patterns \citep{Westad2004}, while more recently, matrix factorization methods have been applied \citep{Clercq2016}.
+It is often assumed that if a recipe can be found with a certain pairing of ingredients, this pairing must be generally favorable \citep{Hart2004}.
 Using the user ratings available, however, it becomes possible to find more specific patterns for certain users groups.
-For example, the Food Pairing theory states that ingredients with overlapping flavor compounds are often used in Western cuisine.
-On the other hand, it is often thought that this theory does not hold for Eastern cuisine, which might indicate a strong cultural bias towards certain combinations of ingredients in relation to the combination of flavor compounds.
+For example, the Food Pairing\textsuperscript{\textregistered} theory states that ingredients with overlapping flavor compounds are often used in Western cuisine \citep{FoodPairing}.
+On the other hand, it is often thought that this theory does not hold for Eastern cuisine, which might indicate a strong cultural bias towards certain combinations of ingredients in relation to the combination of flavor compounds \citep{Ahn2011, Klepper2011}.
 Now that a large volume of recipes and user reviews is available, we can start to find out which ingredients make a good combination in much finer detail.
 
-Since users rate only a very small fraction of all recipes in the database, it is non-trivial to determine whether a user likes a recipe that was not rated by this user.
+Since users rate only a very small fraction of all recipes in the database, it is non-trivial to determine whether a user likes a recipe that was not rated by this user \citep{Ricci2010}.
 Several well-known \emph{Collaborative Filtering} (CF) methods are used to obtain an estimate of these unrated recipes.
-The resulting dense matrix of recipe ratings can also be seen as rating for ingredient or flavor component itemsets.
-Therefore, these itemsets can be mined for user-specific patterns that aid the recommendation of ingredients.
+Instead of a user $\times$ recipe matrix, a recipe $\times$ ingredient variant can be used  as well, which can be used to suggest ingredients to complete a recipe.
 
-In this research, several aspects of recipes and ingredient pairing are studied using a dataset that was derived from the Allrecipes recipe sharing platform.
-This dataset was joined with FooDB, a dataset that includes information on the flavor components of ingredients.
-The resulting dataset is explored from various perspectives, involving ingredient lists, flavor compounds and user ratings, in order to both validate the date and get a better understanding.
-After that, CF techniques are investigated that are used to get a broader knowledge on user preferences in relation to ingredients and flavor components. 
-This gives us the possibility to test the Foodpairing hypothesis, that states that ingredients with overlapping sets of flavor components that make a good combination, and mine for other patterns as well.
+In this research, several aspects of recipes and ingredient pairing are studied using a dataset that was derived from the Allrecipes platform.
+This dataset was enriched with data from FooDB \citep{FooDB}, a dataset that includes information on the flavor components of ingredients.
+The resulting dataset is explored from various perspectives, involving ingredient lists and user ratings, in order to both validate the data and get a better understanding.
+After that, CF techniques are investigated that are used to get a broader knowledge on user preferences in relation to ingredient combinations.

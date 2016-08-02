@@ -1,11 +1,10 @@
-\section{Dataset}
+\section{Datasets}
 \label{sec:dataset}
 
 For the purpose of this research, several new datasets were constructed.
-While there exist a few recipe datasets, none of them include both the required ingredients, corresponding flavor components and user ratings.
-The recipes and user ratings were scraped from the food focussed social networking service Allrecipes.
-The resulting dataset was joined with FooDB, a comprehensive dataset on food constituents, chemistry and biology.
-In this paper we focus on the flavor component data in FooDB, which  describes for a large number of ingredients its constituent flavors.
+While there exist a few recipe datasets \citep{Kaggle, DataHub}, none of them include both the ingredients and user ratings.
+The data was scraped from the food-focussed social networking service Allrecipes \citep{Allrecipes}.
+The resulting dataset was enriched with data from FooDB \citep{FooDB}, a comprehensive, publicly available dataset on food constituents, chemistry and biology.
 This section describes how the dataset was obtained, which choices were made, and gives a high-level overview of its contents.
 
 
@@ -16,21 +15,12 @@ This section describes how the dataset was obtained, which choices were made, an
 \label{subsec:foodb}
 
 FooDB is a freely available resource on food constituent, chemistry and biology.
-The table that makes it interesting for this research is a list of chemicals that give foods their flavor, color, taste, texture and aroma.
+It contains a large amount of information on the chemicals that give foods their flavor, color, taste, texture and aroma.
 Another convenient feature is that foods in FooDB are named in quite general terms.
 For example, instead of having specific descriptions of various types of milk, such as \emph{low far}, \emph{skimmed milk} and \emph{whole milk}, these are referred to simply as milk.
 These different types of milk taste differently because the ratio of chemical components is different, but the components themselves are mostly the same.
 These names can therefore be used as a equivalence group to which to which we will map more specific ingredient names (see \cref{subsec:allrecipes}).
-The following tables are used:
-
-\begin{description}
-	\item [Foods ($893$ items)] metadata concerning certain foods, such as a general and scientific name and a food group (e.g. `Herbs and Spices').
-	\item [Flavors ($856$ items)] categorizes flavors (e.g. `odor`), and groups them (e.g. `vegetable').
-	\item [Chemical compounds ($\num{27593}$ items)] the core of the dataset, describing each compound using $100$ attributes, such as chemical formula and references to literature.
-\end{description}
-
-Separate mappings are available that provide a many-to-many mapping between compounds and the other tables.
-Mapping ingredients from recipes to FooDB therefore provides us with detailed information about both the chemicals and the human sensory perception of these chemicals.
+It contains information about $893$ foodstuffs, such as a general and scientific name and a food group (e.g. `Herbs and Spices').
 
 
 %============================================================
@@ -39,8 +29,7 @@ Mapping ingredients from recipes to FooDB therefore provides us with detailed in
 \subsection{Allrecipes}
 \label{subsec:allrecipes}
 
-Allrecipes is a social networking service that is focussed on recipes for meals.
-Visitors of the website can browse through the collection of recipes that were submitted by its members.
+Visitors of Allrecipes can browse through the collection of recipes that were submitted by its members.
 Recipes are categorized by the type of course, by season, special occasions (e.g. `Christmas`) among others.
 Anyone can sign up for a membership, which gives access to some additional functionality and enables members to submit their own recipes and rate other recipes.
 Two datasets were generated from the information available at Allrecipes: a dataset consisting of ingredients used in recipes and a dataset of user ratings of recipes.
@@ -53,13 +42,13 @@ This section describes how these two datasets were obtained and provides a preli
 \subsubsection{Ingredient sets}
 \label{subsubsec:ingredient_sets}
 
-Resources on the website, such as recipes, reviews and users, are given a unique identifier in a sequence, which makes it trivial to download the HTML page for each resource.
+Resources on the website, such as recipes, reviews and users, are given a unique identifier in a subsequent sequence, which makes it trivial to download the HTML page for each resource.
 Furthermore, the pages follow some of schemas for structured data markup of Schema.org.
 The recipe pages, for example, follow the \texttt{Recipe} schema including properties such as \texttt{totalTime} (total cooking time), \texttt{aggregateRating} (average rating of the recipe) and \texttt{author} (submitter of the recipe).
 The preparation procedure itself was omitted, since it is not of interest for this study.
 The only attribute that required some additional processing were the ingredients themselves.
 There seems to be no standardized way in which these ingredients are provided, although they have some structure.
-Consider for example: ``2 cups Cascadian Farm® organic frozen sweet corn, thawed''.
+Consider for example: ``2 cups Cascadian Farm\textsuperscript{\textregistered} organic frozen sweet corn, thawed''.
 It includes a quantity in cups, a brandname, a production paradigm, taste depiction and state.
 For the purpose of this research, we are interested only in `corn', which we will call a \emph{standardized ingredient}.
 These are obtained by removing the quantity and brandname, using a manually created grammar, and matching the resulting string to a list of standardized ingredients in the FooDB dataset (described below).
@@ -107,7 +96,7 @@ These are obtained by removing the quantity and brandname, using a manually crea
 \end{table}
 
 
-\cref{tab:recipe_attributes} provides an overview of all the recipe attributes that were obtained from Allrecipes, most of which are not the focus of this research.
+\cref{tab:recipe_attributes} provides an overview of all the recipe attributes that were scraped, most of which are not the focus of this research.
 \cref{tab:dataset_summary} provides a summary of the datasets.
 We will be mostly concerned with the ingredient data, which can be represented as a sparse binary matrix $Y$ ($n \times m$):
 
@@ -120,9 +109,9 @@ We will be mostly concerned with the ingredient data, which can be represented a
 	\end{cases}
 \end{equation*}
 
-\cref{tab:ingredients_top10} provides an overview of the top $10$ most frequent ingredients, confirming what most people would assume.
+\cref{tab:ingredients_top10} provides an overview of the top $10$ most frequent ingredients, confirming our intuition.
 \cref{fig:ingredient_frequencies} plots the frequencies of all ingredients on a logarithmic scale, providing a global perspective.
-It shows that the ingredient frequencies follow a log-linear model, which can lead to problems when mining for patterns, since the available data for many ingredients is very limited.
+It shows that the ingredient frequencies follow a log-linear model, which can lead to problems when mining for patterns, since the available data for many ingredients is very limited (see \cref{subsec:association_rule_mining}).
 
 \begin{table}[htbp]
 	\caption{Top 10 of most frequent ingredients}
@@ -195,7 +184,7 @@ In fact, only $113$ users submitted more than $\num{1000}$ reviews.
 \cref{fig:user_ratings} shows the number of reviews per score.
 It seems that Allrecipes has a strong bias towards positive reviews, which might indicate that people tend to rate recipes that they appreciated.
 Another explanation could be that people probably submit their favorite recipes, that are more likely to receive positive feedback.
-Whatever the reason, the plot show that a difference between a $4$ and $5$ star rating is big.
+Whatever the reason, the plot shows that a difference between a $4$ and $5$ star rating is large.
 One way to deal with this is to convert the rating matrix into a binary matrix $\hat{R}$:
 
 \begin{equation*}

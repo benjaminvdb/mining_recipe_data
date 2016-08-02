@@ -35,7 +35,7 @@ flog.info("Loading rating data from input...")
 
 RecipeRatings <- loadData(args$input)
 RecipeRatings <- selectRows(RecipeRatings, args$min_users, args$min_recipes)
-RecipeRatings <- RecipeRatings[1:args$size]
+#RecipeRatings <- RecipeRatings[1:args$size]
 
 flog.info("Finished loading rating data.")
 
