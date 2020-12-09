@@ -21,7 +21,7 @@ The `public_data` folder contains
 
 The `reviews.csv` contains 3,281,560 ratings on a scale from 1 to 5. Each line represents a review and is a tuple of `(recipe_id, reviewer_id, rating, date)`.
 
-- recipe_id: id of the recipe on Allrecipes
-- author_id: user id of the reviewer on Allrecipes
-- rating:    rating on a scale from 1 to 5
-- date:      date of the review in YYYY-MM-DD format
+- `recipe_id`: id of the recipe on Allrecipes
+- `author_id`: user id of the reviewer on Allrecipes
+- `rating`:    rating on a scale from 1 to 5
+- `date`:      date of the review in YYYY-MM-DD format
