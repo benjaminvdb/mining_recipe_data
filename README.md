@@ -10,14 +10,16 @@ A PDF of the paper can be downloaded [here](https://github.com/benjaminvdb/recip
 
 The `public_data` folder contains
 
+```
 .
 ├── recipes.single: a list of ingredients
 ├── recipes.basket: each line contains the ingredients in a recipe
 └── reviews.csv:    star ratings given to recipes by users
+```
 
 ## Reviews
 
-The `reviews.csv` contains 3,281,560 ratings on a scale from 1 to 5. Each line is a tuple of `recipe_id, reviewer_id, rating, date`.
+The `reviews.csv` contains 3,281,560 ratings on a scale from 1 to 5. Each line represents a review and is a tuple of `(recipe_id, reviewer_id, rating, date)`.
 
 - recipe_id: id of the recipe on Allrecipes
 - author_id: user id of the reviewer on Allrecipes
